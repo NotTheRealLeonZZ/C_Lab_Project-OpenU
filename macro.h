@@ -14,12 +14,6 @@ struct Macro
     struct Macro *next;
 };
 
-/* Structure to represent a macro table 
-typedef struct {
-    Macro* macros;
-    int count;
-    int capacity;
-} MacroTable; */
 
 /* Function to initialize the macro table */
 struct Macro *createMacro(const char *macro_name, const char *macro_data);
@@ -36,7 +30,10 @@ void copyMacro(struct Macro *src, struct Macro *dst);
 /* Function to print the macro table */
 void printMacroTable(struct Macro *head);
 
+/* Function to write the given macro to file, until the macro name is changed (macro finished) */
+void writeMacroToOutput(struct Macro *head, FILE *outputFile);
+
 /* Function to free memory used by the macro table */
-void freeMacroTable(struct Macro *head);
+void freeMacroTable(struct Macro **head);
 
 #endif /* MACRO_H */

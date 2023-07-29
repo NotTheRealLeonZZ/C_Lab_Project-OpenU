@@ -93,13 +93,31 @@ void printMacroTable(struct Macro *head)
     }
 }
 
-void freeMacroTable(struct Macro *head)
+void writeMacroToOutput(struct Macro *head, FILE *outputFile)
 {
-    struct Macro *temp;
-    while (head != NULL)
+    char *name = head->name;
+    while (strcmp(head->name, name) == 0)
     {
-        temp = head;
+        fputs(head->data, outputFile);
         head = head->next;
-        free(temp);
+        if (head == NULL)
+        {
+            break;
+        }
     }
+}
+
+void freeMacroTable(struct Macro **head)
+{
+    struct Macro *current = *head;
+    struct Macro *temp;
+
+    while (current != NULL)
+    {
+        temp = current;
+        current = current->next;
+        free(temp); /* Free the memory allocated for the node */
+    }
+
+    *head = NULL; /* Set the head pointer to NULL to indicate an empty list */
 }
