@@ -15,7 +15,9 @@ Ready for assembler "First pass"
 #include <ctype.h>
 #include "parser.h"
 #include "macro.h"
+#include "symbol.h"
 #include "instructions.h"
+#include "directives.h"
 
 void cleanLeadingSpaces(char *input)
 {
@@ -58,55 +60,24 @@ void cleanAllSpaces(char *input)
     *dst = '\0';
 }
 
-/* A method to check for comma problems like too many or not enough */
-bool commaProblem(char *input)
+/* A method to check for comma problems in "mcro" declaration
+Assuming there are no commas in macro decleration  */
+bool commaInLine(char *input)
 {
     int i = 0;
-    int count = 0;
 
     cleanAllSpaces(input);
 
-    /* Count commas */
+    /* Check for commas */
     while (input[i] != '\0')
     {
-        if (input[i] == ',' && input[i + 1] == ',') /* If there are 2 commas in a row */
-        {
-            fprintf(stderr, "Multiple consecutive commas\n");
-            return true;
-        }
         if (input[i] == ',')
         {
-            count = count + 1;
+            fprintf(stdout, "Wrong placed comma in macro decleration.\n");
+            return false;
         }
         i++;
     }
-
-    /* Check if the input has instructions, and checks comma count */
-    for (i = 0; i < NUM_OF_INSTRUCTIONS; i++)
-    {
-        if (strstr(input, instructionsArray[i].name) != NULL)
-        {
-            if (instructionsArray[i].operands_num > 0)
-            {
-                if (count != (instructionsArray[i].operands_num - 1))
-                {
-                    /* printf("number of commas should be is: %d\n", instructionsArray[i].operands_num - 1); */
-                    fprintf(stderr, "ERROR: Incorrect number of commas for instruction: %s\n", instructionsArray[i].name);
-                    return true;
-                }
-            }
-            else
-            {
-                /* printf("number of commas should be is: 0\n"); */
-                if (count != 0)
-                {
-                    fprintf(stderr, "ERROR: Incorrect number of commas for instruction: %s\n", instructionsArray[i].name);
-                    return true;
-                }
-            }
-        }
-    }
-
     return false; /* No problems */
 }
 
@@ -132,7 +103,7 @@ int storeWords(char *line, char words[][MAX_LINE_LENGTH], int numWords)
 {
     char *token = strtok((char *)line, " ,");
 
-    while (token != NULL && numWords < 50)
+    while (token != NULL && numWords < MAX_LINE_LENGTH)
     {
         strcpy(words[numWords++], token);
         token = strtok(NULL, " ,");
@@ -148,155 +119,198 @@ This file will take care of storing macros in macros table and replacing them in
 Later on, it will also make all the parsing for the file, including validating ALL lines.
 
 */
-void parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_name, struct Macro *macro_table_head)
+bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_name, struct Macro *macro_table_head)
 {
-    char line[MAX_LINE_LENGTH];                   /* Variable to hold the current line */
-    char line_copy[MAX_LINE_LENGTH];              /* A copy of the line, to manipulate without losing the original line */
-    bool is_inside_macro = false;                 /* Flag to check if the words im reading are part of a macro */
-    bool line_written = false;                    /* Did I write this line already? */
+    char line[MAX_LINE_LENGTH];      /* Variable to hold the current line */
+    char line_copy[MAX_LINE_LENGTH]; /* A copy of the line, to manipulate without losing the original line */
+    bool is_inside_macro = false;    /* Flag to check if the words im reading are part of a macro */
+    bool createAM = true;
     char current_macro_name[MAX_LINE_LENGTH - 5]; /* Variable to hold current macro name */
     char current_macro_data[MAX_LINE_LENGTH];     /* Variable to hold current macro data (command line) */
     struct Macro *macro_table_head_copy;          /* A copy of the macro table head node, to manipulate without losing the original pointer */
-    struct Macro *new_macro;
-    char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH];
-    int numWords = 0;
+    struct Macro *new_macro;                      /* New macro to add to the macro table */
+    char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH]; /* 2 dim array to hold all the parsed words from a line*/
+    int numWords = 0;                             /* Counter for words captured from line */
+    int lineNumber = 1;                           /* Counter for lines in file */
 
     /* Read a valid string and feed it into "line" variable and checks if it was successful*/
     while (fgets(line, MAX_LINE_LENGTH, assembly_file) != NULL)
     {
         /* Reset pointer to copy */
         macro_table_head_copy = macro_table_head;
-        line_written = false;
+        new_macro = NULL;
 
         strcpy(line_copy, line);
 
-        /* Make adjustments for macro comma check */
-        if (!commaProblem(line_copy))
+        removeNewLineFromEnd(line_copy); /* Remove new line from end of input */
+
+        /* Parse the line into words and count. */
+        numWords = storeWords(line_copy, words, numWords);
+
+        /* Assuming in macro declaration, first word is mcro */
+        if (strcmp(words[0], "mcro") == 0)
         {
-            /* No commas problem */
-            strcpy(line_copy, line);
-
-            removeNewLineFromEnd(line_copy); /* Remove new line from end of input */
-
-            if (!isEmptyOrCommentLines(line_copy))
+            if (!commaInLine(line_copy))
             {
+                cleanLeadingSpaces(line_copy); /* Remove spaces before first word */
 
-                cleanLeadingSpaces(line_copy);
-
-                numWords = storeWords(line_copy, words, numWords);
-
-                /* Check if first word is 'mcro' */
-
-                if (strcmp(words[0], "mcro") == 0)
+                if (numWords != 2)
                 {
-
-                    if (numWords != 2)
-                    {
-                        fprintf(stderr, "Error: Malformed macro declaration.{add line}\n");
-                        /* MAKE SURE TO DELETE AM FILE AT THE END */
-                        /* amFile = false */;
-                    }
-                    else
-                    {
-                        /* Validate macro name */
-                        if (isInstructionName(words[1]))
-                        {
-                            fprintf(stderr, "Error: Macro name cannot be same as instruction name.\n");
-                            /* MAKE SURE TO DELETE AM FILE AT THE END */
-
-                            /* NOT WORKING BECAUSE WHEN MACRO NAME IS INSTRUCTION IT HAS COMMA PROBLEM */
-                            fclose(am_file);
-                            if (remove(am_file_name) != 0)
-                            {
-                                fprintf(stderr, "Error: Failed to delete .am file.\n");
-                            }
-
-                        }
-                        else
-                        {
-
-                            /* We are inside a macro declaration */
-                            is_inside_macro = true;
-
-                            /* words[1] has the macro name */
-                            strcpy(current_macro_name, words[1]);
-
-                            /* Dont copy to .am file */
-                        }
-                    }
-                }
-
-                else if (strcmp(words[0], "endmcro") == 0)
-                {
-                    /* Finished to declear macro */
-                    is_inside_macro = false;
-                    /* Dont copy to .am file */
+                    fprintf(stdout, "Error: Malformed macro declaration in line %d\n", lineNumber);
+                    createAM = false;
                 }
                 else
                 {
-                    /* Search for the macro in our Macro table, and return the pointer */
-                    struct Macro *searchedMacro = findMacro(macro_table_head_copy, words[0]);
-
-                    if (searchedMacro != NULL)
+                    /* Correct number of words in macro decleration
+                    Now validate macro's name */
+                    if (isInstructionName(words[1]) || isDirectiveName(words[1]))
                     {
-                        /* Write macro to .am file as long as name appears in the macro list*/
-                        writeMacroToOutput(searchedMacro, am_file);
-                        line_written = true;
+                        fprintf(stdout, "Error: illegal macro name in line %d\n", lineNumber);
+                        createAM = false;
                     }
-
-                    /* ADD SITUATION WHEN WE COME ACROSS WORD THAT IS NOT KNOWN AND NOT A MACRO */
-
-
-
-                    /* Checking if in macro so we can copy next line (syntax doesnt matter) */
-                    if (is_inside_macro)
+                    else
                     {
-                        /* Reset pointers */
-                        macro_table_head_copy = macro_table_head;
-                        new_macro = NULL;
+                        /* Valid macro opening, flag it */
+                        is_inside_macro = true;
 
-                        /* Reset line read */
-                        strcpy(line_copy, line);
+                        /* words[1] has the macro name */
+                        strcpy(current_macro_name, words[1]);
 
-                        /* Store the macro line into the data variable */
-                        strcpy(current_macro_data, line_copy);
-
-                        /* Create a new macro node */
-                        new_macro = createMacro(current_macro_name, current_macro_data);
-
-                        /* Add this node to the end of the macro table */
-                        addMacro(macro_table_head_copy, new_macro);
-
-                        /* Dont copy to .am file */
+                        /* Dont copy this line to am file */
                     }
-                    else if (!line_written)
-                    {
-                        fputs(line, am_file);
-                    }
+                }
+            }
+        }
+
+        /* Assuming in macro end declaration, first word is endmcro */
+
+        else if (strcmp(words[0], "endmcro") == 0)
+        {
+            if (!commaInLine(line_copy))
+            {
+                cleanLeadingSpaces(line_copy); /* Remove spaces before first word */
+
+                if (numWords != 1)
+                {
+                    fprintf(stdout, "Error: Malformed macro end declaration in line %d\n", lineNumber);
+                    createAM = false;
+                }
+                else
+                {
+                    /* Finished to declear macro, flag it */
+                    is_inside_macro = false;
+                    /* Dont copy to .am file */
                 }
             }
         }
         else
         {
-            /* amFile = false */;
-            /* Comma problem */
+            /* First word in unknown at the moment,
+            Check if we are inside a macro decleration, save it.
+            If not, check if its a known macro to replace it. */
+
+            if (is_inside_macro)
+            {
+
+                /* Reset line_copy to current line */
+                strcpy(line_copy, line);
+
+                /* Store the macro line into the data variable */
+                strcpy(current_macro_data, line_copy);
+
+                /* Create a new macro node */
+                new_macro = createMacro(current_macro_name, current_macro_data);
+
+                /* Add this node to the end of the macro table */
+                addMacro(macro_table_head_copy, new_macro);
+
+                /* Dont copy to .am file */
+            }
+            else
+            {
+                /* We are not inside a macro decleration.
+                That means this line is either a known macro or a unknown line.
+                If its a known macro, we'll write it's data to .am file
+                And if its an unknown line, just write it to .am file, we'll deal with it later */
+
+                /* Reset line_copy to current line */
+                strcpy(line_copy, line);
+
+                struct Macro *searchedMacro = findMacro(macro_table_head_copy->next, words, numWords);
+
+                if (searchedMacro != NULL)
+                {
+                    /* This line has a known macro, write the macro data to .am file*/
+                    int i;
+                    for (i = 0; i < numWords; i++)
+                    {
+                        if (strcmp(searchedMacro->name, words[i]) == 0)
+                        {
+                            writeMacroToOutput(searchedMacro, am_file);
+                        }
+                        else
+                        {
+                            if (i == numWords - 1)
+                            {
+                                fputs(words[i], am_file);
+                                fputs("\n", am_file);
+                            }
+                            else
+                            {
+                                fputs(words[i], am_file);
+                                fputs("  ", am_file);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    /* Check if this line has been written before */
+                    /* Check if need to check */
+                    if (!isEmptyOrCommentLines(line_copy))
+                        fputs(line, am_file);
+                }
+            }
         }
 
-        /* int i;
-        printf("Words in the array: ");
-        for (i = 0; i < numWords; i++)
-        {
-            printf("\'%s\' -> ", words[i]);
-        }
-        printf("\n"); */
-
+        /* Reset words array */
         memset(words, '\0', sizeof(words));
         numWords = 0;
+
+        lineNumber += 1;
     }
 
-    /* if there was at least 1 macro, run function to output .am file with the macro list (This about moving this as soon as macro was found) */
+    if (!createAM)
+    {
+        fclose(am_file);
+        if (remove(am_file_name) != 0)
+        {
+            fprintf(stderr, "Error: Failed to delete .am file.\n");
+        }
+        return false;
+    }
+    return true;
 }
 
-void parseFileSetMacro(FILE *assembly_file, struct Macro *macro_table_head)
+void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_head)
 {
+    char line[MAX_LINE_LENGTH];                       /* Variable to hold the current line */
+    char line_copy[MAX_LINE_LENGTH];                  /* A copy of the line, to manipulate without losing the original line */
+    char current_symbol_name[MAX_SYMBOL_NAME_LENGTH]; /* Variable to hold current symbol's name */
+    int current_symbol_line;                          /* Variable to hold current symbol's line number */
+    char current_symbol_data[3];                      /* Variable to hold current symbol's type (ins or dir) */
+    struct Symbol *symbol_table_head_copy;            /* A copy of the macro table head node, to manipulate without losing the original pointer */
+    struct Symbol *new_symbol;                        /* New symbol to add to the symbol table */
+    char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH];     /* 2 dim array to hold all the parsed words from a line*/
+    int numWords = 0;                                 /* Counter for words captured from line */
+
+    while (fgets(line, MAX_LINE_LENGTH, assembly_file) != NULL)
+    {
+        /* Reset pointer to copy */
+        symbol_table_head_copy = symbol_table_head;
+
+        strcpy(line_copy, line);
+
+        /* Check for comma problem to all sort of commands */
+    }
 }

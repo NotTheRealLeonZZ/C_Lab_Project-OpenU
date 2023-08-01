@@ -3,8 +3,7 @@
 
 #include <stdbool.h>
 
-
-#define MAX_LINE_LENGTH 81
+#define MAX_LINE_LENGTH 82
 
 /* Structure to represent a macro */
 struct Macro
@@ -14,7 +13,6 @@ struct Macro
     struct Macro *next;
 };
 
-
 /* Function to initialize the macro table */
 struct Macro *createMacro(const char *macro_name, const char *macro_data);
 
@@ -22,7 +20,7 @@ struct Macro *createMacro(const char *macro_name, const char *macro_data);
 void addMacro(struct Macro *current_macro, struct Macro *new_macro);
 
 /* Function to find a macro by name */
-struct Macro *findMacro(struct Macro *head_of_macro_table, const char *name);
+struct Macro *findMacro(struct Macro *head, char words[][MAX_LINE_LENGTH], int numWords);
 
 /* Function to copy the whole macro between 2 macro pointers */
 void copyMacro(struct Macro *src, struct Macro *dst);

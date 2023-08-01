@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "pre_assembler.h"
 #include "parser.h"
+#include "first_pass.h"
 
 #define MAX_FILE_NAME_LENGTH 100
 
@@ -22,12 +23,12 @@ int main(int argc, char *argv[])
     snprintf(am_filename, sizeof(am_filename), "%s.am", argv[1]);
 
     printf("as file name: %s\tam file name: %s\n", as_filename, am_filename);
-    
+
     /* Spread macros over .am file */
     preAssemble(as_filename, am_filename);
-  
-    /* First pass - Create tables */
 
+    /* First pass - Create tables */
+    firstPass(am_filename);
 
     return 0;
 }

@@ -20,7 +20,5 @@ extern const struct Instruction instructionsArray[NUM_OF_INSTRUCTIONS];
 bool isInstructionName(char *received_name);
 
 
-/* Function to validate the instruction and its arguments */
-bool validateInstruction(char *instruction);
 
 #endif /* INSTRUCTIONS_H */

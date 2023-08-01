@@ -16,7 +16,7 @@
 */
 void preAssemble(const char *input_file, char *output_file)
 {
-
+    bool parsedMacros = true;
     /* Openes the input file for reading and checks for errors when opening the file */
     FILE *assembly_file = fopen(input_file, "r");
     if (assembly_file == NULL)
@@ -38,15 +38,26 @@ void preAssemble(const char *input_file, char *output_file)
 
     /* Parsing the original file to find all the macros and build a macro table.
     While parsing, if a macro is detected and found on macro table, it will replace it
-    with the macro data in the output file */
-    parseFileHandleMacros(assembly_file, am_file, output_file, macro_table);
+    with the macro data in the output file 
+    Macros will always be decleared before the call for the macro.
+    If I read a word that that isn't a macro, ill copy it to the .am file anyways,
+    On first pass I will prompt an error for it.*/
+    parsedMacros = parseFileHandleMacros(assembly_file, am_file, output_file, macro_table);
 
-    /* Close the files and free memory */
-    fclose(assembly_file);
-    fclose(am_file);
+    if (parsedMacros)
+    {
+        /* Close the files */
+        fclose(assembly_file);
+        fclose(am_file);
+    }
+    else
+    {
+        /* Close only original file cause .am file was closed before deleteing */
+        fclose(assembly_file);
+    }
 
+    /* free memory */
     printMacroTable(macro_table);
 
     freeMacroTable(&macro_table);
-
 }

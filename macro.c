@@ -29,6 +29,7 @@ struct Macro *createMacro(const char *macro_name, const char *macro_data)
     return new_macro;
 }
 
+/* Add a macro at the end of the node list */
 void addMacro(struct Macro *current_macro, struct Macro *new_macro)
 {
     /* Assumming head is already exists */
@@ -40,7 +41,7 @@ void addMacro(struct Macro *current_macro, struct Macro *new_macro)
         return;
     }
 
-    /* Changing current macro's next to point to the new macro */
+    /* Find last macro and change macro's next to point to the new macro */
     while (current_macro->next != NULL)
     {
         current_macro = current_macro->next;
@@ -49,6 +50,7 @@ void addMacro(struct Macro *current_macro, struct Macro *new_macro)
     current_macro->next = new_macro;
 }
 
+/* Probably delete this */
 void copyMacro(struct Macro *src, struct Macro *dst)
 {
     dst->name = src->name;
@@ -58,32 +60,48 @@ void copyMacro(struct Macro *src, struct Macro *dst)
 
 /* Function to find a macro by name.
 @param head - the first pointer to the macro table
-@param name - the macro's name you looking for
+@param words - edit
+@param numWords - edit
 @return pointer for the found macro or NULL */
-struct Macro *findMacro(struct Macro *head, const char *name)
+struct Macro *findMacro(struct Macro *head, char words[][MAX_LINE_LENGTH], int numWords)
 {
+    struct Macro *head_copy;
+    char current_name[MAX_LINE_LENGTH];
+    int i;
+
     /* Checking if head of macro table is NULL */
     if (head == NULL)
     {
-        fprintf(stderr, "Cannot find macro, empty table.");
         return NULL;
     }
 
-    struct Macro *head_copy = head;
-
-    while (head_copy != NULL)
+    for (i = 0; i < numWords; i++)
     {
-        if (strcmp(head_copy->name, name) == 0)
+        head_copy = head;
+        while (head_copy != NULL)
         {
-            return head_copy;
+            strcpy(current_name, head_copy->name);
+            if (strcmp(current_name, words[i]) == 0)
+            {
+                return head_copy;
+            }
+
+            else
+            {
+                while ((head_copy->next != NULL) && (strcmp(head_copy->next->name, current_name) == 0))
+                {
+                    head_copy = head_copy->next;
+                }
+            }
+            head_copy = head_copy->next;
         }
-        head_copy = head_copy->next;
     }
     return NULL;
 }
 
 void printMacroTable(struct Macro *head)
 {
+    printf("Macro Table:\n");
     struct Macro *temp = head;
     while (temp != NULL)
     {
@@ -91,6 +109,7 @@ void printMacroTable(struct Macro *head)
         temp = temp->next;
         printf("\n");
     }
+    printf("=================\n");
 }
 
 void writeMacroToOutput(struct Macro *head, FILE *outputFile)
@@ -107,6 +126,7 @@ void writeMacroToOutput(struct Macro *head, FILE *outputFile)
     }
 }
 
+/* Free the memory allocated by the macro table */
 void freeMacroTable(struct Macro **head)
 {
     struct Macro *current = *head;
