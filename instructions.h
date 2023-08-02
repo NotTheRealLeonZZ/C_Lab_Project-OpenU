@@ -2,9 +2,7 @@
 #define INSTRUCTIONS_H
 
 #include <stdbool.h>
-
-/* Define number of instructions */
-#define NUM_OF_INSTRUCTIONS 16
+#include "globals.h"
 
 struct Instruction
 {
@@ -18,7 +16,5 @@ extern const struct Instruction instructionsArray[NUM_OF_INSTRUCTIONS];
 
 /* Function to check if a given name is a macro name */
 bool isInstructionName(char *received_name);
-
-
 
 #endif /* INSTRUCTIONS_H */

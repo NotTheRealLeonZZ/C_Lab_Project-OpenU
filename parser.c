@@ -18,6 +18,7 @@ Ready for assembler "First pass"
 #include "symbol.h"
 #include "instructions.h"
 #include "directives.h"
+#include "globals.h"
 
 void cleanLeadingSpaces(char *input)
 {
@@ -99,17 +100,17 @@ bool isEmptyOrCommentLines(char *line)
     return false;
 }
 
-int storeWords(char *line, char words[][MAX_LINE_LENGTH], int numWords)
+int storeWords(char *line, char words[][MAX_LINE_LENGTH], int num_words)
 {
     char *token = strtok((char *)line, " ,");
 
-    while (token != NULL && numWords < MAX_LINE_LENGTH)
+    while (token != NULL && num_words < MAX_LINE_LENGTH)
     {
-        strcpy(words[numWords++], token);
+        strcpy(words[num_words++], token);
         token = strtok(NULL, " ,");
     }
 
-    return numWords;
+    return num_words;
 }
 
 /*
@@ -124,14 +125,14 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
     char line[MAX_LINE_LENGTH];      /* Variable to hold the current line */
     char line_copy[MAX_LINE_LENGTH]; /* A copy of the line, to manipulate without losing the original line */
     bool is_inside_macro = false;    /* Flag to check if the words im reading are part of a macro */
-    bool createAM = true;
+    bool create_AM = true;
     char current_macro_name[MAX_LINE_LENGTH - 5]; /* Variable to hold current macro name */
     char current_macro_data[MAX_LINE_LENGTH];     /* Variable to hold current macro data (command line) */
     struct Macro *macro_table_head_copy;          /* A copy of the macro table head node, to manipulate without losing the original pointer */
     struct Macro *new_macro;                      /* New macro to add to the macro table */
     char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH]; /* 2 dim array to hold all the parsed words from a line*/
-    int numWords = 0;                             /* Counter for words captured from line */
-    int lineNumber = 1;                           /* Counter for lines in file */
+    int num_words = 0;                            /* Counter for words captured from line */
+    int line_number = 1;                          /* Counter for lines in file */
 
     /* Read a valid string and feed it into "line" variable and checks if it was successful*/
     while (fgets(line, MAX_LINE_LENGTH, assembly_file) != NULL)
@@ -145,7 +146,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
         removeNewLineFromEnd(line_copy); /* Remove new line from end of input */
 
         /* Parse the line into words and count. */
-        numWords = storeWords(line_copy, words, numWords);
+        num_words = storeWords(line_copy, words, num_words);
 
         /* Assuming in macro declaration, first word is mcro */
         if (strcmp(words[0], "mcro") == 0)
@@ -154,10 +155,10 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
             {
                 cleanLeadingSpaces(line_copy); /* Remove spaces before first word */
 
-                if (numWords != 2)
+                if (num_words != 2)
                 {
-                    fprintf(stdout, "Error: Malformed macro declaration in line %d\n", lineNumber);
-                    createAM = false;
+                    fprintf(stdout, "Error: Malformed macro declaration in line %d\n", line_number);
+                    create_AM = false;
                 }
                 else
                 {
@@ -165,8 +166,8 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
                     Now validate macro's name */
                     if (isInstructionName(words[1]) || isDirectiveName(words[1]))
                     {
-                        fprintf(stdout, "Error: illegal macro name in line %d\n", lineNumber);
-                        createAM = false;
+                        fprintf(stdout, "Error: illegal macro name in line %d\n", line_number);
+                        create_AM = false;
                     }
                     else
                     {
@@ -190,10 +191,10 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
             {
                 cleanLeadingSpaces(line_copy); /* Remove spaces before first word */
 
-                if (numWords != 1)
+                if (num_words != 1)
                 {
-                    fprintf(stdout, "Error: Malformed macro end declaration in line %d\n", lineNumber);
-                    createAM = false;
+                    fprintf(stdout, "Error: Malformed macro end declaration in line %d\n", line_number);
+                    create_AM = false;
                 }
                 else
                 {
@@ -236,13 +237,13 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
                 /* Reset line_copy to current line */
                 strcpy(line_copy, line);
 
-                struct Macro *searchedMacro = findMacro(macro_table_head_copy->next, words, numWords);
+                struct Macro *searchedMacro = findMacro(macro_table_head_copy->next, words, num_words);
 
                 if (searchedMacro != NULL)
                 {
                     /* This line has a known macro, write the macro data to .am file*/
                     int i;
-                    for (i = 0; i < numWords; i++)
+                    for (i = 0; i < num_words; i++)
                     {
                         if (strcmp(searchedMacro->name, words[i]) == 0)
                         {
@@ -250,7 +251,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
                         }
                         else
                         {
-                            if (i == numWords - 1)
+                            if (i == num_words - 1)
                             {
                                 fputs(words[i], am_file);
                                 fputs("\n", am_file);
@@ -275,12 +276,12 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
 
         /* Reset words array */
         memset(words, '\0', sizeof(words));
-        numWords = 0;
+        num_words = 0;
 
-        lineNumber += 1;
+        line_number += 1;
     }
 
-    if (!createAM)
+    if (!create_AM)
     {
         fclose(am_file);
         if (remove(am_file_name) != 0)
@@ -297,20 +298,46 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
     char line[MAX_LINE_LENGTH];                       /* Variable to hold the current line */
     char line_copy[MAX_LINE_LENGTH];                  /* A copy of the line, to manipulate without losing the original line */
     char current_symbol_name[MAX_SYMBOL_NAME_LENGTH]; /* Variable to hold current symbol's name */
+    int line_number = 0;                              /* Line number counter for error messages */
     int current_symbol_line;                          /* Variable to hold current symbol's line number */
     char current_symbol_data[3];                      /* Variable to hold current symbol's type (ins or dir) */
     struct Symbol *symbol_table_head_copy;            /* A copy of the macro table head node, to manipulate without losing the original pointer */
     struct Symbol *new_symbol;                        /* New symbol to add to the symbol table */
     char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH];     /* 2 dim array to hold all the parsed words from a line*/
-    int numWords = 0;                                 /* Counter for words captured from line */
+    int num_words = 0;                                /* Counter for words captured from line */
 
     while (fgets(line, MAX_LINE_LENGTH, assembly_file) != NULL)
     {
         /* Reset pointer to copy */
         symbol_table_head_copy = symbol_table_head;
 
+        /* Make a copy of line to work on */
         strcpy(line_copy, line);
 
-        /* Check for comma problem to all sort of commands */
+        removeNewLineFromEnd(line_copy); /* Remove new line from end of input */
+
+        /* Parse the line into words and count. */
+        num_words = storeWords(line_copy, words, num_words);
+
+        /* Checks if current line has a valid symbol */
+
+        if (wordIsSymbol(symbol_table_head_copy, words[0]))
+        {
+            /* Valid name of symbol, check syntax */
+            printf("Found a symbol! \"%s\"\n", words[0]);
+        }
+
+        /* int i;
+        for (i = 0; i < num_words; i++)
+        {
+            printf("%s ->", words[i]);
+        }
+        printf("\n"); */
+
+        /* Reset words array */
+        memset(words, '\0', sizeof(words));
+        num_words = 0;
+
+        line_number += 1;
     }
 }

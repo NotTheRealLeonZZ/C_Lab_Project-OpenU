@@ -2,8 +2,7 @@
 #define MACRO_H
 
 #include <stdbool.h>
-
-#define MAX_LINE_LENGTH 82
+#include "globals.h"
 
 /* Structure to represent a macro */
 struct Macro

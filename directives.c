@@ -2,16 +2,15 @@
 #include <string.h>
 #include <stdio.h>
 #include "directives.h"
+#include "globals.h"
 
 /* Create the array of directives */
-const struct Directive directiveArray[DIRECTIVES_H] = {
+const struct Directive directiveArray[NUM_OF_DIRECTIVES] = {
     /* Name, number of operands, decimal code */
     {".data"},
     {".string"},
     {".entry"},
-    {".extern"}
-};
-
+    {".extern"}};
 
 /* Function to check if a given name is a macro name */
 bool isDirectiveName(char *received_name)
@@ -26,6 +25,3 @@ bool isDirectiveName(char *received_name)
     }
     return false;
 }
-
-
-

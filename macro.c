@@ -11,6 +11,7 @@ Also everything that handles memory for these purposes.
 #include <string.h>
 #include "macro.h"
 #include "my_string.h"
+#include "globals.h"
 
 struct Macro *createMacro(const char *macro_name, const char *macro_data)
 {

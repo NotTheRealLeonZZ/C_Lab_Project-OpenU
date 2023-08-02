@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "instructions.h"
+#include "globals.h"
 
 /* Create the array of instructions */
 const struct Instruction instructionsArray[NUM_OF_INSTRUCTIONS] = {
@@ -25,7 +26,6 @@ const struct Instruction instructionsArray[NUM_OF_INSTRUCTIONS] = {
 
 };
 
-
 /* Function to check if a given name is a macro name */
 bool isInstructionName(char *received_name)
 {
@@ -39,6 +39,3 @@ bool isInstructionName(char *received_name)
     }
     return false;
 }
-
-
-

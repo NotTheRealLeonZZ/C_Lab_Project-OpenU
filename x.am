@@ -4,19 +4,12 @@ LOOP:   jmp L1
         bne LOOP
         sub @r1, @r4
         bne END
-L1:  inc  K          sub @r1, @r4
-        bne END
-bne          sub @r1, @r4
-        bne END
-LOOP
+L1:     inc K
+        bne LOOP
         sub @r2, @r3
         bne END
 END:    stop
-STR:  .string  “abcdef”          sub @r2, @r3
-        bne END
-        sub @r1, @r4
-        bne END
-LENGTH:  .data          sub @r1, @r4
-        bne END
-6  -9  15
+STR:    .string “abcdef” 
+LENGTH: .data 6,-9,15
 K:      .data 22
+L1: .data 2

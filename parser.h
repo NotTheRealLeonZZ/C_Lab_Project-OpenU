@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include "macro.h"
 #include "symbol.h"
-
-#define MAX_LINE_LENGTH 82       /*  Maximum line length, including '\n' and '\0' */
-#define MAX_INSTRUCTION_LENGTH 4 /* Maximum instruction string length */
+#include "globals.h"
 
 void cleanLeadingSpaces(char *input);
 

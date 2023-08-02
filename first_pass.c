@@ -15,10 +15,11 @@ void firstPass(const char *input_file)
     }
 
     /* Create the symbol table */
-    struct Symbol *symbol_table = createSymbol("Symbol_table", -1, "Starting of symbol table");
+    struct Symbol *symbol_table = createSymbol("Symbol_table", -100, "Symbol_type");
 
     parseFileHandleSymbols(assembly_file, symbol_table);
 
     printSymbolTable(symbol_table);
 
+    freeSymbolTable(&symbol_table);
 }

@@ -2,8 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include "symbol.h"
+#include "registers.h"
+#include "instructions.h"
+#include "directives.h"
 #include "my_string.h"
+#include "globals.h"
 
 /* Create a new Symbol structure */
 struct Symbol *createSymbol(const char *symbol_name, const int symbol_line_num, const char *symbol_type)
@@ -17,7 +22,7 @@ struct Symbol *createSymbol(const char *symbol_name, const int symbol_line_num, 
     }
 
     new_symbol->name = my_strdup(symbol_name);
-    new_symbol->line_num = symbol_line_num;
+    new_symbol->address = symbol_line_num + MEMORY_START;
     new_symbol->type = my_strdup(symbol_type);
     new_symbol->next = NULL;
 
@@ -45,8 +50,8 @@ void addSymbol(struct Symbol *current_symbol, struct Symbol *new_symbol)
     current_symbol->next = new_symbol;
 }
 
-
 /* Function to find a symbol by name.
+Maybe change it to find all symbols in line
 @param head - the first pointer to the symbol table
 @param name - the symbol's name you looking for
 @return pointer for the found symbol or NULL */
@@ -72,6 +77,68 @@ struct Symbol *findSymbol(struct Symbol *head, const char *name)
     return NULL;
 }
 
+bool wordIsSymbol(struct Symbol *head, char *word)
+{
+    if (word == NULL || word == '\0')
+    {
+        /* Check if word is empty, so its not a symbol */
+        return false;
+    }
+
+    size_t word_length = strlen(word);
+
+    /* Check if max symbol size exceeded */
+    if (word_length > MAX_SYMBOL_NAME_LENGTH)
+    {
+        return false;
+    }
+
+    /* Making sure first character is a letter a-zA-Z */
+    if (!isalpha(word[0]))
+    {
+        return false;
+    }
+
+    /* Check if the last character is ':' */
+    if (word[word_length - 1] != ':')
+    {
+        return false;
+    }
+
+    size_t i;
+    /* Check all other words, to be numbers or letters */
+    for (i = 1; i < word_length - 1; i++)
+    {
+        if (!isalnum(word[i]))
+        {
+            return false;
+        }
+    }
+
+    /* Clear ':' from end of word */
+    word[word_length - 1] = '\0';
+
+    /* Check if its a name of saved word in our assembly (instruction, directive)
+    It cannot be register, because register name starts with '@' and I already
+    checked for first valid letter a-zA-Z */
+    if (isDirectiveName(word) || isInstructionName(word))
+    {
+        printf("This is not an acceptable name for symbol! %s\n", word);
+        return false;
+    }
+
+    /* Check if its already a stored symbol*/
+    struct Macro *tempSymbol = findSymbol(head, word);
+
+    if (tempSymbol != NULL)
+    {
+        printf("Found symbol already in table %s\n", word);
+        return false;
+    }
+
+    /* All tests pass, its a valid macro */
+    return true;
+}
 
 /* Print the symbol table */
 void printSymbolTable(struct Symbol *head)
@@ -80,7 +147,7 @@ void printSymbolTable(struct Symbol *head)
     printf("Symbol Table:\n");
     while (temp != NULL)
     {
-        printf("\"%s\": line %d, \"%s\" -> ", temp->name, temp->line_num, temp->type);
+        printf("\"%s\": address: %d, \"%s\" -> ", temp->name, temp->address, temp->type);
         temp = temp->next;
         printf("\n");
     }
