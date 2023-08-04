@@ -128,7 +128,7 @@ bool wordIsSymbol(struct Symbol *head, char *word)
     }
 
     /* Check if its already a stored symbol*/
-    struct Macro *tempSymbol = findSymbol(head, word);
+    struct Symbol *tempSymbol = findSymbol(head, word);
 
     if (tempSymbol != NULL)
     {
@@ -138,6 +138,30 @@ bool wordIsSymbol(struct Symbol *head, char *word)
 
     /* All tests pass, its a valid macro */
     return true;
+}
+
+void removeSymbolFromLine(char *line, char *symbol_name)
+{
+    char *substr_pos = strstr(line, symbol_name);
+
+    if (substr_pos != NULL)
+    {
+        /* Check what is the index where symbol name ends */
+        int index = substr_pos - line + strlen(symbol_name);
+        strcpy(symbol_name, line + index);
+    }
+    else
+    {
+        strcpy(symbol_name, line);
+    }
+}
+
+void warnSymbolIfNecessary(char *word, int line_number)
+{
+    if (strcmp(word, ".extern") == 0 || strcmp(word, ".entry") == 0)
+    {
+        fprintf(stdout, "Warning! in line %d: \".entry\" and \".extern\" shouldn't have a symbol! \n", line_number);
+    }
 }
 
 /* Print the symbol table */

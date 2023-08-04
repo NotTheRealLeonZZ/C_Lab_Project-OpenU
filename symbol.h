@@ -26,6 +26,10 @@ struct Symbol *findSymbol(struct Symbol *head, const char *name);
 
 bool wordIsSymbol(struct Symbol *head, char *word);
 
+void removeSymbolFromLine(char *line, char *symbol_name);
+
+void warnSymbolIfNecessary(char *word, int line_number);
+
 /* Print the symbol table */
 void printSymbolTable(struct Symbol *head);
 

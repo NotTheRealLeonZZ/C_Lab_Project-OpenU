@@ -12,9 +12,12 @@
 #define DIRECTIVE "dir"
 
 #define NUM_OF_DIRECTIVES 4
+#define NUM_OF_CHARACTERS_FOR_DIRECTIVE 6
 
 #define NUM_OF_INSTRUCTIONS 16
 
 #define MAX_FILE_NAME_LENGTH 100
+
+#define MAX_WORDS_IN_A_LINE 40
 
 #endif /* GLOBALS_H */

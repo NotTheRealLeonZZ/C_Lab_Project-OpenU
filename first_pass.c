@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "symbol.h"
+#include "parser.h"
 
 void firstPass(const char *input_file)
 {

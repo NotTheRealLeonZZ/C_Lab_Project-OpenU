@@ -12,13 +12,23 @@ void cleanAllSpaces(char *param);
 
 bool commaInLine(char *input);
 
+bool commaAtFirstOrLast(char *input);
+
+bool doubleComma(char *line, int line_number);
+
+int countCommas(char *line);
+
 void removeNewLineFromEnd(char *line);
 
 bool isEmptyOrCommentLines(char *line);
 
 int storeWords(char *line, char words[][MAX_LINE_LENGTH], int numWords);
 
+int tokenStrings(char *line, char words[][MAX_LINE_LENGTH], int num_words);
+
 void deleteCurrentLine(FILE *file);
+
+void resetLineCopy(char *line, char *copy_line);
 
 /* Function to parse the assembly file */
 bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_name, struct Macro *macro_table_head);
