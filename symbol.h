@@ -13,7 +13,7 @@ struct Symbol
 };
 
 /* Create a new Symbol structure */
-struct Symbol *createSymbol(const char *symbol_name, const int symbol_line_num, const char *symbol_type);
+struct Symbol *createSymbol(const char *symbol_name, const int symbol_address, const char *symbol_type);
 
 /* Add a symbol at the end of the node list */
 void addSymbol(struct Symbol *current_symbol, struct Symbol *new_symbol);

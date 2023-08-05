@@ -43,28 +43,42 @@ char *getName(char *full_directive_name)
     return NULL;
 }
 
-bool dataCommaProblem(char *line, int line_number, int num_words)
+bool dataCommaProblem(char *line, int line_number, int num_words, char *directive_full_name)
 {
     char line_copy[MAX_LINE_LENGTH];
     int comma_count;
     int data_correct_comma_count = num_words - 2; /* Sum words minus 1 for the .data word, and should be 1 less than parameters */
+    char directive_name_copy[NUM_OF_CHARACTERS_FOR_DIRECTIVE];
 
+    strcpy(directive_name_copy, directive_full_name);
     strcpy(line_copy, line);
-    printf("line in dataCommaProblem; %s\n", line);
 
-    /* Check for double commas in line */
-    if (!doubleComma(line_copy, line_number))
+    /* Check there is no comma after .data */
+    if (!commaAfterFirstWord(line_copy, directive_name_copy))
     {
-        /* Count commas in line */
-        comma_count = countCommas(line_copy);
-        printf("number of commas in line: %d while it should be: %d\n", comma_count, data_correct_comma_count);
-        if (comma_count == data_correct_comma_count)
+
+        /* Check for double commas in line */
+        if (!doubleComma(line_copy, line_number))
         {
-            /* Corrent number of commas.
-            Validate parameters to integers only! */
-            printf("Corrent number of commas for line: %s\n", line);
+            /* Count commas in line */
+            comma_count = countCommas(line_copy);
+
+            if (comma_count == data_correct_comma_count)
+            {
+                /* Corrent number of commas. */
+                return false;
+            }
+            else
+            {
+                fprintf(stdout, "Error! in line %d: Incorrect number of commas.\n", line_number);
+            }
         }
     }
+    else
+    {
+        fprintf(stdout, "Error! in line %d: Invalid comma at start or end of the line.\n", line_number);
+    }
+
     return true;
 }
 
@@ -72,32 +86,47 @@ bool dataCommaProblem(char *line, int line_number, int num_words)
 bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, int line_number)
 {
     char *directive_full_name = words[0];
-
-    printf("directive_full_name in validDirective: %s\n", directive_full_name);
-    printf("line in validDirective: %s\n", line);
+    int i;
+    int num_count = 0;
 
     if (strcmp(directive_full_name, ".data") == 0)
     {
         printf("This is a data directive!\n");
 
         /* Check syntax for data */
-        if (!dataCommaProblem(line, line_number, num_words))
-            return true;
+        if (!dataCommaProblem(line, line_number, num_words, directive_full_name))
+        {
+            for (i = 1; i < num_words; i++)
+            {
+                if (isInteger(words[i], line_number))
+                    num_count += 1;
+            }
+
+            if (num_count == num_words - 1)
+                return true;
+        }
     }
+
     else if (strcmp(directive_full_name, ".string") == 0)
     {
         printf("This is a string directive!\n");
-        return true;
+
+        /* Commas are allowed, only between "" */
+
+        return false; /*change to true */
     }
+
     else if (strcmp(directive_full_name, ".entry") == 0)
     {
         printf("This is an entry directive!\n");
-        return true;
+        return false; /*change to true */
     }
+
     else if (strcmp(directive_full_name, ".extern") == 0)
     {
         printf("This is an extern directive!\n");
-        return true;
+        return false; /*change to true */
     }
+
     return false;
 }

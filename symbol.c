@@ -11,7 +11,7 @@
 #include "globals.h"
 
 /* Create a new Symbol structure */
-struct Symbol *createSymbol(const char *symbol_name, const int symbol_line_num, const char *symbol_type)
+struct Symbol *createSymbol(const char *symbol_name, const int symbol_address, const char *symbol_type)
 {
 
     struct Symbol *new_symbol = (struct Symbol *)malloc(sizeof(struct Symbol));
@@ -22,7 +22,7 @@ struct Symbol *createSymbol(const char *symbol_name, const int symbol_line_num, 
     }
 
     new_symbol->name = my_strdup(symbol_name);
-    new_symbol->address = symbol_line_num + MEMORY_START;
+    new_symbol->address = symbol_address;
     new_symbol->type = my_strdup(symbol_type);
     new_symbol->next = NULL;
 

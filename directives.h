@@ -17,7 +17,7 @@ bool isDirectiveName(char *received_name);
 
 char *getName(char *full_directive_name);
 
-bool dataCommaProblem(char *line, int line_number, int num_words);
+bool dataCommaProblem(char *line, int line_number, int num_words, char *directive_full_name);
 
 /* Validate directive syntax */
 bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, int line_number);

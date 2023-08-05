@@ -90,6 +90,27 @@ bool commaAtFirstOrLast(char *input)
     return 0;
 }
 
+bool commaAfterFirstWord(char *line, char *first_word)
+{
+    char *new_line[MAX_LINE_LENGTH];
+    int index;
+
+    if (line != NULL)
+    {
+        /* Check what is the index where symbol name ends */
+        index = strlen(first_word);
+        strcpy(new_line, line + index);
+    }
+
+    cleanAllSpaces(new_line);
+    if (commaAtFirstOrLast(new_line))
+        return true;
+
+    /* Copy modified line to parse for parameters easily */
+    strcpy(line, new_line);
+    return false;
+}
+
 bool doubleComma(char *line, int line_number)
 {
     int i = 0;
@@ -115,7 +136,6 @@ int countCommas(char *line)
     int comma_count = 0;
     int i = 0;
     char line_copy[MAX_LINE_LENGTH];
-    printf("counting commas line: %s\n", line);
 
     strcpy(line_copy, line);
     cleanAllSpaces(line_copy);
@@ -199,6 +219,22 @@ void resetLineCopy(char *line, char *line_copy)
     cleanLeadingSpaces(line_copy);
     removeNewLineFromEnd(line_copy);
 }
+
+bool isInteger(char *param, int line_number)
+{
+    char *endptr; /* Pointer to the first non-long int character */
+
+    strtol(param, &endptr, 10);
+
+    if (*endptr == '\0')
+        return true;
+    else
+    {
+        fprintf(stdout, "Error! in line %d: Parameter %s should have been an integer and it's not.\n", line_number, param);
+        return false;
+    }
+}
+
 /*
 
 The main parsing function for assembly files.
@@ -384,8 +420,8 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
     int line_number = 1;                              /* Line number counter for error messages */
     int memory_count = MEMORY_START;                  /* A counter for memory location, to address symbols */
     char current_symbol_name[MAX_SYMBOL_NAME_LENGTH]; /* Variable to hold current symbol's name */
-    int current_symbol_line;                          /* Variable to hold current symbol's line number */
-    char current_symbol_data[3];                      /* Variable to hold current symbol's type (ins or dir) */
+    int current_symbol_address;                       /* Variable to hold current symbol's address number */
+    char current_symbol_type[SYMBOL_TYPE_LENGTH];     /* Variable to hold current symbol's type (ins or dir) */
     struct Symbol *symbol_table_head_copy;            /* A copy of the macro table head node, to manipulate without losing the original pointer */
     struct Symbol *new_symbol;                        /* New symbol to add to the symbol table */
     char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH];     /* 2 dim array to hold all the parsed words from a line*/
@@ -412,7 +448,6 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
             /* Valid name of symbol, check syntax */
             strcpy(current_symbol_name, words[0]);
             printf("Found a symbol! \"%s\"\n", current_symbol_name);
-            printf("line copy: %s\n", line_copy);
 
             /* line_copy holds the name of the symbol including the ':',
             make a copy of the original line without the symbol */
@@ -441,7 +476,6 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
 
                 if (isDirectiveName(words[0]))
                 {
-                    printf("This symbol contains a directive: %s\n", words[0]);
 
                     /* Validate directive syntax first pass */
                     if (validDirective(words, num_words, line_copy, line_number))
@@ -451,6 +485,15 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
                         /* Valid syntax of directive,
                         type: dir
                         address: memory_count */
+                        current_symbol_address = memory_count;
+                        strcpy(current_symbol_type, "dir");
+
+                        new_symbol = createSymbol(current_symbol_name, current_symbol_address, current_symbol_type);
+                        addSymbol(symbol_table_head_copy, new_symbol);
+
+                        /* Promote memory for each parameter + '\0' (it counts instead of the .data)
+                        but remove 1 because at end of every iteration we add 1 for memory */
+                        memory_count += num_words - 1;
                     }
                 }
 
