@@ -9,14 +9,17 @@ LOOP:   jmp L1
         prn -5
         bne LOOP
         m1
-L1:     inc K m1
-        bne m1 LOOP
+L1:     inc K
+        bne LOOP
         mcro m2
         sub @r2, @r3
         bne END
         endmcro 
         m2
 END:    stop
-STR:    .string “abcdef” m2
-m1 LENGTH: .data m1 6,-9,15
-K:      .data 22
+STR:    .string “abcdef is a string” 
+K:      .data 22, 0
+L1: .data 2
+K1:     .extern E
+LENGTH: .data 6,-9 , 15, 3
+L1: .data 2

@@ -2,8 +2,7 @@
 #include "pre_assembler.h"
 #include "parser.h"
 #include "first_pass.h"
-
-#define MAX_FILE_NAME_LENGTH 100
+#include "globals.h"
 
 int main(int argc, char *argv[])
 {

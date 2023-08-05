@@ -18,6 +18,7 @@ Ready for assembler "First pass"
 #include "symbol.h"
 #include "instructions.h"
 #include "directives.h"
+#include "globals.h"
 
 void cleanLeadingSpaces(char *input)
 {
@@ -42,7 +43,7 @@ void cleanLeadingSpaces(char *input)
     input[j] = '\0';
 }
 
-/* A method to remove spaces before and after input */
+/* A method to remove spaces entirely from input */
 void cleanAllSpaces(char *input)
 {
     char *src = input;
@@ -60,8 +61,8 @@ void cleanAllSpaces(char *input)
     *dst = '\0';
 }
 
-/* A method to check for comma problems in "mcro" declaration
-Assuming there are no commas in macro decleration  */
+/* A method to check for a comma in line.
+Assuming there are no commas in macro/extern/entry and instruction with no parameters decleration  */
 bool commaInLine(char *input)
 {
     int i = 0;
@@ -72,13 +73,82 @@ bool commaInLine(char *input)
     while (input[i] != '\0')
     {
         if (input[i] == ',')
-        {
-            fprintf(stdout, "Wrong placed comma in macro decleration.\n");
-            return false;
-        }
+            return true;
         i++;
     }
     return false; /* No problems */
+}
+
+bool commaAtFirstOrLast(char *input)
+{
+    char input_copy[MAX_LINE_LENGTH];
+    strcpy(input_copy, input);
+    size_t length = strlen(input_copy);
+
+    if (*input_copy == ',' || input_copy[length - 1] == ',')
+        return 1; /* first character is a comma */
+    return 0;
+}
+
+bool commaAfterFirstWord(char *line, char *first_word)
+{
+    char *new_line[MAX_LINE_LENGTH];
+    int index;
+
+    if (line != NULL)
+    {
+        /* Check what is the index where symbol name ends */
+        index = strlen(first_word);
+        strcpy(new_line, line + index);
+    }
+
+    cleanAllSpaces(new_line);
+    if (commaAtFirstOrLast(new_line))
+        return true;
+
+    /* Copy modified line to parse for parameters easily */
+    strcpy(line, new_line);
+    return false;
+}
+
+bool doubleComma(char *line, int line_number)
+{
+    int i = 0;
+    char line_copy[MAX_LINE_LENGTH];
+
+    strcpy(line_copy, line);
+    cleanAllSpaces(line_copy);
+
+    while (line_copy[i] != '\0')
+    {
+        if (line_copy[i] == ',' && line_copy[i + 1] == ',') /* If there are 2 commas in a row */
+        {
+            fprintf(stdout, "Error! in line %d: Multiple consecutive commas\n", line_number);
+            return true;
+        }
+        i++;
+    }
+    return false;
+}
+
+int countCommas(char *line)
+{
+    int comma_count = 0;
+    int i = 0;
+    char line_copy[MAX_LINE_LENGTH];
+
+    strcpy(line_copy, line);
+    cleanAllSpaces(line_copy);
+
+    while (line_copy[i] != '\0')
+    {
+        if (line_copy[i] == ',')
+        {
+            comma_count = comma_count + 1;
+        }
+        i++;
+    }
+    return comma_count;
 }
 
 void removeNewLineFromEnd(char *line)
@@ -99,17 +169,70 @@ bool isEmptyOrCommentLines(char *line)
     return false;
 }
 
-int storeWords(char *line, char words[][MAX_LINE_LENGTH], int numWords)
+int storeWords(char *line, char words[][MAX_LINE_LENGTH], int num_words)
 {
     char *token = strtok((char *)line, " ,");
 
-    while (token != NULL && numWords < MAX_LINE_LENGTH)
+    while (token != NULL && num_words < MAX_LINE_LENGTH)
     {
-        strcpy(words[numWords++], token);
+        strcpy(words[num_words++], token);
         token = strtok(NULL, " ,");
     }
 
-    return numWords;
+    return num_words;
+}
+
+int tokenStrings(char *line, char words[][MAX_LINE_LENGTH], int num_words)
+{
+    num_words = 0;
+    char *token;
+
+    /* Copy the input line to a temporary buffer since strtok modifies the original string */
+    char line_copy[MAX_LINE_LENGTH];
+    strncpy(line_copy, line, sizeof(line_copy));
+    line_copy[sizeof(line_copy) - 1] = '\0'; /* Ensure null-termination */
+
+    /* Extract the first word (e.g., ".string") */
+    token = strtok(line_copy, " ");
+    if (token != NULL)
+    {
+        strncpy(words[num_words++], token, MAX_LINE_LENGTH - 1);
+    }
+    else
+    {
+        return num_words; /* Return 0 if no first word found */
+    }
+
+    /* Extract the content between the double quotes */
+    token = strtok(NULL, "\"");
+    if (token != NULL && num_words < MAX_LINE_LENGTH)
+    {
+        strncpy(words[num_words++], token, MAX_LINE_LENGTH - 1);
+    }
+
+    return num_words;
+}
+
+void resetLineCopy(char *line, char *line_copy)
+{
+    strcpy(line_copy, line);
+    cleanLeadingSpaces(line_copy);
+    removeNewLineFromEnd(line_copy);
+}
+
+bool isInteger(char *param, int line_number)
+{
+    char *endptr; /* Pointer to the first non-long int character */
+
+    strtol(param, &endptr, 10);
+
+    if (*endptr == '\0')
+        return true;
+    else
+    {
+        fprintf(stdout, "Error! in line %d: Parameter %s should have been an integer and it's not.\n", line_number, param);
+        return false;
+    }
 }
 
 /*
@@ -124,14 +247,14 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
     char line[MAX_LINE_LENGTH];      /* Variable to hold the current line */
     char line_copy[MAX_LINE_LENGTH]; /* A copy of the line, to manipulate without losing the original line */
     bool is_inside_macro = false;    /* Flag to check if the words im reading are part of a macro */
-    bool createAM = true;
+    bool create_AM = true;
     char current_macro_name[MAX_LINE_LENGTH - 5]; /* Variable to hold current macro name */
     char current_macro_data[MAX_LINE_LENGTH];     /* Variable to hold current macro data (command line) */
     struct Macro *macro_table_head_copy;          /* A copy of the macro table head node, to manipulate without losing the original pointer */
     struct Macro *new_macro;                      /* New macro to add to the macro table */
     char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH]; /* 2 dim array to hold all the parsed words from a line*/
-    int numWords = 0;                             /* Counter for words captured from line */
-    int lineNumber = 1;                           /* Counter for lines in file */
+    int num_words = 0;                            /* Counter for words captured from line */
+    int line_number = 1;                          /* Counter for lines in file */
 
     /* Read a valid string and feed it into "line" variable and checks if it was successful*/
     while (fgets(line, MAX_LINE_LENGTH, assembly_file) != NULL)
@@ -140,24 +263,21 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
         macro_table_head_copy = macro_table_head;
         new_macro = NULL;
 
-        strcpy(line_copy, line);
-
-        removeNewLineFromEnd(line_copy); /* Remove new line from end of input */
+        resetLineCopy(line, line_copy);
 
         /* Parse the line into words and count. */
-        numWords = storeWords(line_copy, words, numWords);
+        num_words = storeWords(line_copy, words, num_words);
 
         /* Assuming in macro declaration, first word is mcro */
         if (strcmp(words[0], "mcro") == 0)
         {
             if (!commaInLine(line_copy))
             {
-                cleanLeadingSpaces(line_copy); /* Remove spaces before first word */
 
-                if (numWords != 2)
+                if (num_words != 2)
                 {
-                    fprintf(stdout, "Error: Malformed macro declaration in line %d\n", lineNumber);
-                    createAM = false;
+                    fprintf(stdout, "Error! in line %d Malformed macro declaration.\n", line_number);
+                    create_AM = false;
                 }
                 else
                 {
@@ -165,8 +285,8 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
                     Now validate macro's name */
                     if (isInstructionName(words[1]) || isDirectiveName(words[1]))
                     {
-                        fprintf(stdout, "Error: illegal macro name in line %d\n", lineNumber);
-                        createAM = false;
+                        fprintf(stdout, "Error! in line %d: illegal macro name.\n", line_number);
+                        create_AM = false;
                     }
                     else
                     {
@@ -179,6 +299,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
                         /* Dont copy this line to am file */
                     }
                 }
+                fprintf(stdout, "Error! in line %d: unnecessary comma.\n");
             }
         }
 
@@ -190,10 +311,10 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
             {
                 cleanLeadingSpaces(line_copy); /* Remove spaces before first word */
 
-                if (numWords != 1)
+                if (num_words != 1)
                 {
-                    fprintf(stdout, "Error: Malformed macro end declaration in line %d\n", lineNumber);
-                    createAM = false;
+                    fprintf(stdout, "Error! in line %d: Malformed macro end declaration.\n", line_number);
+                    create_AM = false;
                 }
                 else
                 {
@@ -236,13 +357,13 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
                 /* Reset line_copy to current line */
                 strcpy(line_copy, line);
 
-                struct Macro *searchedMacro = findMacro(macro_table_head_copy->next, words, numWords);
+                struct Macro *searchedMacro = findMacro(macro_table_head_copy->next, words, num_words);
 
                 if (searchedMacro != NULL)
                 {
                     /* This line has a known macro, write the macro data to .am file*/
                     int i;
-                    for (i = 0; i < numWords; i++)
+                    for (i = 0; i < num_words; i++)
                     {
                         if (strcmp(searchedMacro->name, words[i]) == 0)
                         {
@@ -250,7 +371,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
                         }
                         else
                         {
-                            if (i == numWords - 1)
+                            if (i == num_words - 1)
                             {
                                 fputs(words[i], am_file);
                                 fputs("\n", am_file);
@@ -275,12 +396,12 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
 
         /* Reset words array */
         memset(words, '\0', sizeof(words));
-        numWords = 0;
+        num_words = 0;
 
-        lineNumber += 1;
+        line_number += 1;
     }
 
-    if (!createAM)
+    if (!create_AM)
     {
         fclose(am_file);
         if (remove(am_file_name) != 0)
@@ -296,21 +417,115 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
 {
     char line[MAX_LINE_LENGTH];                       /* Variable to hold the current line */
     char line_copy[MAX_LINE_LENGTH];                  /* A copy of the line, to manipulate without losing the original line */
+    int line_number = 1;                              /* Line number counter for error messages */
+    int memory_count = MEMORY_START;                  /* A counter for memory location, to address symbols */
     char current_symbol_name[MAX_SYMBOL_NAME_LENGTH]; /* Variable to hold current symbol's name */
-    int current_symbol_line;                          /* Variable to hold current symbol's line number */
-    char current_symbol_data[3];                      /* Variable to hold current symbol's type (ins or dir) */
+    int current_symbol_address;                       /* Variable to hold current symbol's address number */
+    char current_symbol_type[SYMBOL_TYPE_LENGTH];     /* Variable to hold current symbol's type (ins or dir) */
     struct Symbol *symbol_table_head_copy;            /* A copy of the macro table head node, to manipulate without losing the original pointer */
     struct Symbol *new_symbol;                        /* New symbol to add to the symbol table */
     char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH];     /* 2 dim array to hold all the parsed words from a line*/
-    int numWords = 0;                                 /* Counter for words captured from line */
+    int num_words = 0;                                /* Counter for words captured from line */
 
     while (fgets(line, MAX_LINE_LENGTH, assembly_file) != NULL)
     {
         /* Reset pointer to copy */
         symbol_table_head_copy = symbol_table_head;
 
+        /* Make a copy of line to work on */
         strcpy(line_copy, line);
 
-        /* Check for comma problem to all sort of commands */
+        removeNewLineFromEnd(line_copy); /* Remove new line from end of input */
+
+        /* Add check if after ':' there is a "," */
+
+        /* Parse the line into words and count. */
+        num_words = storeWords(line_copy, words, num_words);
+
+        /* Checks if current line has a valid symbol and remove ':' from the end */
+        if (wordIsSymbol(symbol_table_head_copy, words[0]))
+        {
+            /* Valid name of symbol, check syntax */
+            strcpy(current_symbol_name, words[0]);
+            printf("Found a symbol! \"%s\"\n", current_symbol_name);
+
+            /* line_copy holds the name of the symbol including the ':',
+            make a copy of the original line without the symbol */
+
+            removeSymbolFromLine(line, line_copy);
+            cleanLeadingSpaces(line_copy);
+            removeNewLineFromEnd(line_copy);
+
+            printf("modified line_copy: %s\n", line_copy);
+            /* line_copy holds the data of the symbol, either a directive or instruction
+            copy it to original line */
+            strcpy(line, line_copy);
+
+            /* Check for comma as first word or last character */
+            if (!commaAtFirstOrLast(line_copy))
+            {
+                /* Check the type of first word, and validate */
+                /* Parse just the data of the symbol, without the symbol name, to words array. */
+
+                /* Reset words array */
+                memset(words, '\0', sizeof(words));
+                num_words = 0;
+                num_words = storeWords(line_copy, words, num_words);
+
+                resetLineCopy(line, line_copy);
+
+                if (isDirectiveName(words[0]))
+                {
+
+                    /* Validate directive syntax first pass */
+                    if (validDirective(words, num_words, line_copy, line_number))
+                    {
+                        warnSymbolIfNecessary(words[0], line_number);
+
+                        /* Valid syntax of directive,
+                        type: dir
+                        address: memory_count */
+                        current_symbol_address = memory_count;
+                        strcpy(current_symbol_type, "dir");
+
+                        new_symbol = createSymbol(current_symbol_name, current_symbol_address, current_symbol_type);
+                        addSymbol(symbol_table_head_copy, new_symbol);
+
+                        /* Promote memory for each parameter + '\0' (it counts instead of the .data)
+                        but remove 1 because at end of every iteration we add 1 for memory */
+                        memory_count += num_words - 1;
+                    }
+                }
+
+                else if (isInstructionName(words[0]))
+                {
+                    printf("This symbol contains an instruction: %s\n", words[0]);
+                    /* Validate instruction syntax for first pass */
+                }
+            }
+            else
+            {
+                fprintf(stdout, "Error! in line %d: Invalid comma at beginning/end of line.\n", line_number);
+                /* Flag for assembler not to continue to second pass and dont output any files (delete am) */
+            }
+        }
+
+        /* Not a symbol, the only thing that interesting here is the line count,
+        because each command can add lines depends on the addressing method. */
+
+        int i;
+        for (i = 0; i < num_words; i++)
+        {
+            printf("%s -> ", words[i]);
+        }
+        printf("\n");
+        printf("===================\n");
+
+        /* Reset words array */
+        memset(words, '\0', sizeof(words));
+        num_words = 0;
+
+        line_number += 1;
+        memory_count += 1;
     }
 }
