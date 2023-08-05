@@ -82,6 +82,30 @@ bool dataCommaProblem(char *line, int line_number, int num_words, char *directiv
     return true;
 }
 
+bool stringCommaProblem(char *line, int line_number, char *directive_full_name)
+{
+    char line_copy[MAX_LINE_LENGTH];
+    char directive_name_copy[NUM_OF_CHARACTERS_FOR_DIRECTIVE];
+
+    strcpy(directive_name_copy, directive_full_name);
+    strcpy(line_copy, line);
+
+    if (!commaAfterFirstWord(line_copy, directive_name_copy))
+    {
+        return false;
+    }
+    else
+    {
+        fprintf(stdout, "Error! in line %d: Invalid comma at start or end of the line.\n", line_number);
+    }
+    return true;
+}
+
+bool stringApostrophesProblem(char *line, int line_number, char *directive_full_name)
+{
+    return true;
+}
+
 /* Validate directive syntax */
 bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, int line_number)
 {
@@ -112,8 +136,15 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
         printf("This is a string directive!\n");
 
         /* Commas are allowed, only between "" */
-
-        return false; /*change to true */
+        if (!stringCommaProblem(line, line_number, directive_full_name))
+        {
+            printf("line after stringCommaProblem: %s\n", line);
+            if (!stringApostrophesProblem(line, line_number, directive_full_name))
+            {
+                /* No problem with Apostrophes */
+                return true;
+            }
+        }
     }
 
     else if (strcmp(directive_full_name, ".entry") == 0)

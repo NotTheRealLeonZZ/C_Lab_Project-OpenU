@@ -90,6 +90,9 @@ bool commaAtFirstOrLast(char *input)
     return 0;
 }
 
+/* add description
+@return true if there is a comma after the first word.
+Also, modifies the line to return without the first word for later parameter validation */
 bool commaAfterFirstWord(char *line, char *first_word)
 {
     char *new_line[MAX_LINE_LENGTH];
@@ -97,7 +100,7 @@ bool commaAfterFirstWord(char *line, char *first_word)
 
     if (line != NULL)
     {
-        /* Check what is the index where symbol name ends */
+        /* Create new line without the first word */
         index = strlen(first_word);
         strcpy(new_line, line + index);
     }

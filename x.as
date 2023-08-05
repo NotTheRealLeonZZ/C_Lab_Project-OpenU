@@ -16,10 +16,10 @@ L1:     inc K
         bne END
         endmcro 
         m2
-END:    stop
-STR:    .string “abcdef is a string” 
+END:    stop 
 K:      .data 22, 0
 L1: .data 2
 K1:     .extern E
 LENGTH: .data 6,-9 , 15, 3
 L1: .data 2
+STR:    .string  “abcdef is a string”
