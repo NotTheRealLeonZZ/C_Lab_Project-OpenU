@@ -76,7 +76,7 @@ bool dataCommaProblem(char *line, int line_number, int num_words, char *directiv
     }
     else
     {
-        fprintf(stdout, "Error! in line %d: Invalid comma at start or end of the line.\n", line_number);
+        fprintf(stdout, "Error! in line %d: Invalid comma in line.\n", line_number);
     }
 
     return true;
@@ -96,7 +96,7 @@ bool stringCommaProblem(char *line, int line_number, char *directive_full_name)
     }
     else
     {
-        fprintf(stdout, "Error! in line %d: Invalid comma at start or end of the line.\n", line_number);
+        fprintf(stdout, "Error! in line %d: Invalid comma in line.\n", line_number);
     }
     return true;
 }

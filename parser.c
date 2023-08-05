@@ -437,80 +437,85 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
 
         /* Make a copy of line to work on */
         strcpy(line_copy, line);
-
+        cleanLeadingSpaces(line_copy);   /* Clear leading spaces of line */
         removeNewLineFromEnd(line_copy); /* Remove new line from end of input */
-
-        /* Add check if after ':' there is a "," */
 
         /* Parse the line into words and count. */
         num_words = storeWords(line_copy, words, num_words);
 
-        /* Checks if current line has a valid symbol and remove ':' from the end */
-        if (wordIsSymbol(symbol_table_head_copy, words[0]))
+        if (!commaAtFirstOrLast(line_copy)) /* Check if a comma is presented at start or finish */
         {
-            /* Valid name of symbol, check syntax */
-            strcpy(current_symbol_name, words[0]);
-            printf("Found a symbol! \"%s\"\n", current_symbol_name);
+            /* Checks if current line has a valid symbol and remove ':' from the end */
+            if (wordIsSymbol(symbol_table_head_copy, words[0]))
+            {
+                /* Valid name of symbol, check syntax */
+                strcpy(current_symbol_name, words[0]);
+                printf("Found a symbol! \"%s\"\n", current_symbol_name);
 
-            /* line_copy holds the name of the symbol including the ':',
+                /* line_copy holds the name of the symbol including the ':',
             make a copy of the original line without the symbol */
 
-            removeSymbolFromLine(line, line_copy);
-            cleanLeadingSpaces(line_copy);
-            removeNewLineFromEnd(line_copy);
+                removeSymbolFromLine(line, line_copy);
+                cleanLeadingSpaces(line_copy);
+                removeNewLineFromEnd(line_copy);
 
-            printf("modified line_copy: %s\n", line_copy);
-            /* line_copy holds the data of the symbol, either a directive or instruction
+                printf("modified line_copy: %s\n", line_copy);
+                /* line_copy holds the data of the symbol, either a directive or instruction
             copy it to original line */
-            strcpy(line, line_copy);
+                strcpy(line, line_copy);
 
-            /* Check for comma as first word or last character */
-            if (!commaAtFirstOrLast(line_copy))
-            {
-                /* Check the type of first word, and validate */
-                /* Parse just the data of the symbol, without the symbol name, to words array. */
-
-                /* Reset words array */
-                memset(words, '\0', sizeof(words));
-                num_words = 0;
-                num_words = storeWords(line_copy, words, num_words);
-
-                resetLineCopy(line, line_copy);
-
-                if (isDirectiveName(words[0]))
+                /* Check for comma as first word or last character */
+                if (!commaAtFirstOrLast(line_copy))
                 {
+                    /* Check the type of first word, and validate */
+                    /* Parse just the data of the symbol, without the symbol name, to words array. */
 
-                    /* Validate directive syntax first pass */
-                    if (validDirective(words, num_words, line_copy, line_number))
+                    /* Reset words array */
+                    memset(words, '\0', sizeof(words));
+                    num_words = 0;
+                    num_words = storeWords(line_copy, words, num_words);
+
+                    resetLineCopy(line, line_copy);
+
+                    if (isDirectiveName(words[0]))
                     {
-                        warnSymbolIfNecessary(words[0], line_number);
 
-                        /* Valid syntax of directive,
+                        /* Validate directive syntax first pass */
+                        if (validDirective(words, num_words, line_copy, line_number))
+                        {
+                            warnSymbolIfNecessary(words[0], line_number);
+
+                            /* Valid syntax of directive,
                         type: dir
                         address: memory_count */
-                        current_symbol_address = memory_count;
-                        strcpy(current_symbol_type, "dir");
+                            current_symbol_address = memory_count;
+                            strcpy(current_symbol_type, "dir");
 
-                        new_symbol = createSymbol(current_symbol_name, current_symbol_address, current_symbol_type);
-                        addSymbol(symbol_table_head_copy, new_symbol);
+                            new_symbol = createSymbol(current_symbol_name, current_symbol_address, current_symbol_type);
+                            addSymbol(symbol_table_head_copy, new_symbol);
 
-                        /* Promote memory for each parameter + '\0' (it counts instead of the .data)
+                            /* Promote memory for each parameter + '\0' (it counts instead of the .data)
                         but remove 1 because at end of every iteration we add 1 for memory */
-                        memory_count += num_words - 1;
+                            memory_count += num_words - 1;
+                        }
+                    }
+
+                    else if (isInstructionName(words[0]))
+                    {
+                        printf("This symbol contains an instruction: %s\n", words[0]);
+                        /* Validate instruction syntax for first pass */
                     }
                 }
-
-                else if (isInstructionName(words[0]))
+                else
                 {
-                    printf("This symbol contains an instruction: %s\n", words[0]);
-                    /* Validate instruction syntax for first pass */
+                    fprintf(stdout, "Error! in line %d: Invalid comma at beginning/end of line.\n", line_number);
+                    /* Flag for assembler not to continue to second pass and dont output any files (delete am) */
                 }
             }
-            else
-            {
-                fprintf(stdout, "Error! in line %d: Invalid comma at beginning/end of line.\n", line_number);
-                /* Flag for assembler not to continue to second pass and dont output any files (delete am) */
-            }
+        }
+        else
+        {
+            fprintf(stdout, "Error! in line %d: Invalid comma at beginning/end of line.\n", line_number);
         }
 
         /* Not a symbol, the only thing that interesting here is the line count,
