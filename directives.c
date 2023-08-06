@@ -76,10 +76,51 @@ bool dataCommaProblem(char *line, int line_number, int num_words, char *directiv
     }
     else
     {
-        fprintf(stdout, "Error! in line %d: Invalid comma at start or end of the line.\n", line_number);
+        fprintf(stdout, "Error! in line %d: Invalid comma in line.\n", line_number);
     }
 
     return true;
+}
+
+bool stringCommaProblem(char *line, int line_number, char *directive_full_name)
+{
+    char line_copy[MAX_LINE_LENGTH];
+    char directive_name_copy[NUM_OF_CHARACTERS_FOR_DIRECTIVE];
+
+    strcpy(directive_name_copy, directive_full_name);
+    strcpy(line_copy, line);
+
+    if (!commaAfterFirstWord(line_copy, directive_name_copy)) /* Modify the real line */
+    {
+        return false;
+    }
+    else
+    {
+        fprintf(stdout, "Error! in line %d: Invalid comma in line.\n", line_number);
+    }
+    return true;
+}
+
+bool stringQuoteasProblem(char *line, int line_number, char *directive_full_name)
+{
+    int count_quotes = 0;
+    removeSubString(line, directive_full_name);
+    cleanLeadingSpaces(line);
+    /* Check if quote is 1st and last char
+    Check if there are exactly 2 Apostro 
+    Check all characters are ascii*/
+
+    if (quoteAtFirstAndLast(line))
+    {
+        count_quotes = countQuotes(line);
+        if (count_quotes != 2)
+        {
+            fprintf(stdout, "Error! in line %d, Incorrect number of quotes.\n", line_number);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 /* Validate directive syntax */
@@ -112,8 +153,16 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
         printf("This is a string directive!\n");
 
         /* Commas are allowed, only between "" */
-
-        return false; /*change to true */
+        if (!stringCommaProblem(line, line_number, directive_full_name))
+        {
+            if (!stringQuoteasProblem(line, line_number, directive_full_name))
+            {
+                /* No problem with quotes */
+                printf("Line to check quotes: %s\n", line);
+                if (isAscii(line, line_number))
+                    return true;
+            }
+        }
     }
 
     else if (strcmp(directive_full_name, ".entry") == 0)
