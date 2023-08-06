@@ -21,7 +21,7 @@ bool dataCommaProblem(char *line, int line_number, int num_words, char *directiv
 
 bool stringCommaProblem(char *line, int line_number, char *directive_full_name);
 
-bool stringApostrophesProblem(char *line, int line_number, char *directive_full_name);
+bool stringQuoteasProblem(char *line, int line_number, char *directive_full_name);
 
 /* Validate directive syntax */
 bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, int line_number);

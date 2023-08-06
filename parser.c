@@ -19,6 +19,7 @@ Ready for assembler "First pass"
 #include "instructions.h"
 #include "directives.h"
 #include "globals.h"
+#include "memory.h"
 
 void cleanLeadingSpaces(char *input)
 {
@@ -90,12 +91,22 @@ bool commaAtFirstOrLast(char *input)
     return 0;
 }
 
+bool quoteAtFirstAndLast(char *input)
+{
+    char input_copy[MAX_LINE_LENGTH];
+    strcpy(input_copy, input);
+    size_t length = strlen(input_copy);
+    if (*input_copy == '"' && input_copy[length - 1] == '"')
+        return 1; /* first and last characters are double quotes */
+    return 0;
+}
+
 /* add description
 @return true if there is a comma after the first word.
 Also, modifies the line to return without the first word for later parameter validation */
 bool commaAfterFirstWord(char *line, char *first_word)
 {
-    char *new_line[MAX_LINE_LENGTH];
+    char new_line[MAX_LINE_LENGTH];
     int index;
 
     if (line != NULL)
@@ -147,11 +158,31 @@ int countCommas(char *line)
     {
         if (line_copy[i] == ',')
         {
-            comma_count = comma_count + 1;
+            comma_count += 1;
         }
         i++;
     }
     return comma_count;
+}
+
+int countQuotes(char *line)
+{
+    int quote_count = 0;
+    int i = 0;
+    char line_copy[MAX_LINE_LENGTH];
+
+    strcpy(line_copy, line);
+    cleanAllSpaces(line_copy);
+
+    while (line_copy[i] != '\0')
+    {
+        if (line_copy[i] == '"')
+        {
+            quote_count += 1;
+        }
+        i++;
+    }
+    return quote_count;
 }
 
 void removeNewLineFromEnd(char *line)
@@ -238,6 +269,26 @@ bool isInteger(char *param, int line_number)
     }
 }
 
+bool isAscii(char *line, int line_number)
+{
+    while (*line != '\0')
+    {
+        /*  Check if the ASCII code of the character is within the valid range  */
+        if ((unsigned char)(*line) > 127)
+        {
+            return false;
+        }
+        line++;
+    }
+    return true;
+}
+
+void removeSubString(char *line, char *sub_string)
+{
+    int index = strlen(sub_string);
+    strcpy(line, line + index);
+}
+
 /*
 
 The main parsing function for assembly files.
@@ -302,7 +353,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
                         /* Dont copy this line to am file */
                     }
                 }
-                fprintf(stdout, "Error! in line %d: unnecessary comma.\n");
+                fprintf(stdout, "Error! in line %d: unnecessary comma.\n", line_number);
             }
         }
 
@@ -494,9 +545,8 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
                             new_symbol = createSymbol(current_symbol_name, current_symbol_address, current_symbol_type);
                             addSymbol(symbol_table_head_copy, new_symbol);
 
-                            /* Promote memory for each parameter + '\0' (it counts instead of the .data)
-                        but remove 1 because at end of every iteration we add 1 for memory */
-                            memory_count += num_words - 1;
+                            printf("preform memory promotion to %s\n", line_copy);
+                            memory_count = promoteMemory(memory_count, line_copy, num_words, words[0]);
                         }
                     }
 
