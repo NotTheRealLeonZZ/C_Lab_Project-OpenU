@@ -8,6 +8,8 @@
 
 void cleanLeadingSpaces(char *input);
 
+void removeTrailingSpaces(char *input);
+
 void cleanAllSpaces(char *param);
 
 bool commaInLine(char *input);

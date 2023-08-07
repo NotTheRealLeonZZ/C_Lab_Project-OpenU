@@ -10,6 +10,7 @@ int promoteMemory(int memory_count, char *line, int num_words, char *name)
     }
     else if (strcmp(name, ".string") == 0)
     {
+        removeTrailingSpaces(line);
         int len = strlen(line);
         memory_count += len - 2; /* removing 2 quotes  */
     }

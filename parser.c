@@ -44,6 +44,21 @@ void cleanLeadingSpaces(char *input)
     input[j] = '\0';
 }
 
+void removeTrailingSpaces(char *input)
+{
+    int length = strlen(input);
+    int i = length - 1;
+
+    /* Find the index of the last non-space character */
+    while (i >= 0 && input[i] == ' ')
+    {
+        i--;
+    }
+
+    /* Replace trailing spaces with the null terminator */
+    input[i + 1] = '\0';
+}
+
 /* A method to remove spaces entirely from input */
 void cleanAllSpaces(char *input)
 {
@@ -87,8 +102,8 @@ bool commaAtFirstOrLast(char *input)
     size_t length = strlen(input_copy);
 
     if (*input_copy == ',' || input_copy[length - 1] == ',')
-        return 1; /* first character is a comma */
-    return 0;
+        return true; /* first character is a comma */
+    return false;
 }
 
 bool quoteAtFirstAndLast(char *input)
@@ -96,9 +111,9 @@ bool quoteAtFirstAndLast(char *input)
     char input_copy[MAX_LINE_LENGTH];
     strcpy(input_copy, input);
     size_t length = strlen(input_copy);
-    if (*input_copy == '"' && input_copy[length - 1] == '"')
-        return 1; /* first and last characters are double quotes */
-    return 0;
+    if ((*input_copy == '"' || *input_copy == ' ') && (input_copy[length - 1] == '"' || input_copy[length - 1] == ' '))
+        return true; /* first and last characters are double quotes */
+    return false;
 }
 
 /* add description
@@ -182,6 +197,7 @@ int countQuotes(char *line)
         }
         i++;
     }
+
     return quote_count;
 }
 
@@ -535,18 +551,22 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
                         if (validDirective(words, num_words, line_copy, line_number))
                         {
                             warnSymbolIfNecessary(words[0], line_number);
+                            /* No need to create symbol for extern and entry.
+                            Validation is enough, later we'll deal with it */
+                            if (strcmp(words[0], ".extern") != 0 && strcmp(words[0], ".entry") != 0)
+                            {
+                                /* Valid syntax of directive,
+                                type: dir
+                                address: memory_count */
+                                current_symbol_address = memory_count;
+                                strcpy(current_symbol_type, "dir");
 
-                            /* Valid syntax of directive,
-                        type: dir
-                        address: memory_count */
-                            current_symbol_address = memory_count;
-                            strcpy(current_symbol_type, "dir");
+                                new_symbol = createSymbol(current_symbol_name, current_symbol_address, current_symbol_type);
+                                addSymbol(symbol_table_head_copy, new_symbol);
 
-                            new_symbol = createSymbol(current_symbol_name, current_symbol_address, current_symbol_type);
-                            addSymbol(symbol_table_head_copy, new_symbol);
-
-                            printf("preform memory promotion to %s\n", line_copy);
-                            memory_count = promoteMemory(memory_count, line_copy, num_words, words[0]);
+                                printf("preform memory promotion to %s\n", line_copy);
+                                memory_count = promoteMemory(memory_count, line_copy, num_words, words[0]);
+                            }
                         }
                     }
 
