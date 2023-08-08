@@ -10,10 +10,11 @@ L1:     inc K
         bne END
 END:    stop 
 K:      .data 22, 0
-L1: .data 2
+ L1:  .data 3   
 K1: .extern E
 LENGTH:  .data    6,-9 , 15, 3   
 L2: .data 2
-STR:    .string   "abcdef is a, string"
+STR:    .string   "abcdef is a, string" 
 L3: .data 3
  T9:  .entry  L5
+ LOOP:   jmp   L1

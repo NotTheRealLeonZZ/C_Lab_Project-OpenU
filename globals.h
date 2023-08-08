@@ -1,6 +1,8 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#define MAX_MACRO_NAME 76
+
 #define MAX_LINE_LENGTH 82       /*  Maximum line length, including '\n' and '\0' */
 #define MAX_INSTRUCTION_LENGTH 5 /* Maximum instruction string length */
 #define MEMORY_START 100

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include "parser.h"
 
 int promoteMemory(int memory_count, char *line, int num_words, char *name)
 {

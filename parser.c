@@ -318,7 +318,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
     char line_copy[MAX_LINE_LENGTH]; /* A copy of the line, to manipulate without losing the original line */
     bool is_inside_macro = false;    /* Flag to check if the words im reading are part of a macro */
     bool create_AM = true;
-    char current_macro_name[MAX_LINE_LENGTH - 5]; /* Variable to hold current macro name */
+    char current_macro_name[MAX_MACRO_NAME];      /* Variable to hold current macro name */
     char current_macro_data[MAX_LINE_LENGTH];     /* Variable to hold current macro data (command line) */
     struct Macro *macro_table_head_copy;          /* A copy of the macro table head node, to manipulate without losing the original pointer */
     struct Macro *new_macro;                      /* New macro to add to the macro table */
@@ -574,6 +574,9 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
                     {
                         printf("This symbol contains an instruction: %s\n", words[0]);
                         /* Validate instruction syntax for first pass */
+                        if (validInstruction(words, num_words, line_copy, line_number))
+                        {
+                        }
                     }
                 }
                 else
