@@ -144,8 +144,14 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
         {
             for (i = 1; i < num_words; i++)
             {
-                if (isInteger(words[i], line_number))
+                if (isInteger(words[i]))
                     num_count += 1;
+
+                else
+                {
+                    fprintf(stdout, "Error! in line %d: Parameter %s should have been an integer and it's not.\n", line_number, words[i]);
+                    return false;
+                }
             }
 
             if (num_count == num_words - 1)

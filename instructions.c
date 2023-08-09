@@ -4,6 +4,7 @@
 #include "instructions.h"
 #include "globals.h"
 #include "parser.h"
+#include "registers.h"
 
 /* Create the array of instructions */
 const struct Instruction instructionsArray[NUM_OF_INSTRUCTIONS] = {
@@ -39,6 +40,49 @@ bool isInstructionName(char *received_name)
         }
     }
     return false;
+}
+
+/* This method is for first pass, where my symbol table is not yet full */
+bool validateOneOperand(char *operand, int index, int line_number)
+{
+    bool isInt = isInteger(operand);
+
+    size_t operand_length = strlen(operand);
+    operand[operand_length] = ':';
+    bool isSymbol = wordIsSymbol(operand);
+    operand[operand_length] = '\0';
+
+    bool isRegister = isRegisterName(operand);
+
+    if (isInt && instructionsArray[index].destination_addressing_method[0] != 0)
+        return true;
+    if (isSymbol && instructionsArray[index].destination_addressing_method[1] != 0)
+        return true;
+    if (isRegister && instructionsArray[index].destination_addressing_method[2] != 0)
+        return true;
+    return false;
+
+    /*
+    if (instructionsArray[index].destination_addressing_method[0] != 0)
+    {
+        printf("Destination addressing method 1 is found.\n");
+        return isInteger(operand, line_number);
+    }
+    else if (instructionsArray[index].destination_addressing_method[1] != 0)
+    {
+        printf("Destination addressing method 3 is found.\n");
+        return wordIsSymbol(operand);
+        return true;
+        /* Any word can mean a symbol in first pass,  
+}
+else if (instructionsArray[index].destination_addressing_method[2] != 0)
+{
+    /*check for register name 
+    return isRegisterName(operand);
+}
+printf("Done validation operands.\n");
+return true;
+*/
 }
 
 bool instructionCommaProblem(char *line, int line_number, int num_words, char *instruction_full_name, int index)
@@ -90,7 +134,26 @@ bool instructionOperandsProblem(char words[][MAX_LINE_LENGTH], int num_words, ch
     if (instructionsArray[index].operands_num == instruction_correct_operands_count)
     {
         printf("correct number of operands!\n");
-        return false;
+        if (instruction_correct_operands_count == 2)
+        {
+            /* That means that words[1] is source operand and words[2] is destination operand */
+            printf("This instruction has 2 operands: %s, %s\n", words[1], words[2]);
+        }
+        else if (instruction_correct_operands_count == 1)
+        {
+            /* This means words[1] is destination operand */
+            printf("This instruction has 1 operand: %s\n", words[1]);
+            if (validateOneOperand(words[1], index, line_number))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            /* This means there are no operands at all */
+            printf("This instruction has no operands.\n");
+            return false;
+        }
     }
     else
     {

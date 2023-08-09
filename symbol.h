@@ -24,7 +24,7 @@ void addSymbol(struct Symbol *current_symbol, struct Symbol *new_symbol);
 @return pointer for the found symbol or NULL */
 struct Symbol *findSymbol(struct Symbol *head, const char *name);
 
-bool wordIsSymbol(struct Symbol *head, char *word);
+bool wordIsSymbol(char *word);
 
 void removeSymbolFromLine(char *line, char *symbol_name);
 

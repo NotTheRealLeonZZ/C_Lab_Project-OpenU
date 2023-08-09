@@ -77,7 +77,7 @@ struct Symbol *findSymbol(struct Symbol *head, const char *name)
     return NULL;
 }
 
-bool wordIsSymbol(struct Symbol *head, char *word)
+bool wordIsSymbol(char *word)
 {
     if (word == NULL || word == '\0')
     {
@@ -127,16 +127,7 @@ bool wordIsSymbol(struct Symbol *head, char *word)
         return false;
     }
 
-    /* Check if its already a stored symbol*/
-    struct Symbol *tempSymbol = findSymbol(head, word);
-
-    if (tempSymbol != NULL)
-    {
-        printf("Found symbol already in table %s\n", word);
-        return false;
-    }
-
-    /* All tests pass, its a valid macro */
+    /* All tests pass, its a valid symbol */
     return true;
 }
 

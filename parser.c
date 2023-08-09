@@ -270,7 +270,7 @@ void resetLineCopy(char *line, char *line_copy)
     removeNewLineFromEnd(line_copy);
 }
 
-bool isInteger(char *param, int line_number)
+bool isInteger(char *param)
 {
     char *endptr; /* Pointer to the first non-long int character */
 
@@ -280,7 +280,6 @@ bool isInteger(char *param, int line_number)
         return true;
     else
     {
-        fprintf(stdout, "Error! in line %d: Parameter %s should have been an integer and it's not.\n", line_number, param);
         return false;
     }
 }
@@ -513,7 +512,7 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
         if (!commaAtFirstOrLast(line_copy)) /* Check if a comma is presented at start or finish */
         {
             /* Checks if current line has a valid symbol and remove ':' from the end */
-            if (wordIsSymbol(symbol_table_head_copy, words[0]))
+            if (wordIsSymbol(words[0]) && !findSymbol(symbol_table_head_copy, words[0]))
             {
                 /* Valid name of symbol, check syntax */
                 strcpy(current_symbol_name, words[0]);

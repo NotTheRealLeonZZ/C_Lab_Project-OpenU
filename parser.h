@@ -38,7 +38,7 @@ void deleteCurrentLine(FILE *file);
 
 void resetLineCopy(char *line, char *copy_line);
 
-bool isInteger(char *param, int line_number);
+bool isInteger(char *param);
 
 bool isAscii(char *line, int line_number);
 

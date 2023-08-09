@@ -25,4 +25,4 @@ L2: .data 2
 STR:    .string   "abcdef is a, string" 
 L3: .data 3
  T9:  .entry  L5
- LOOP:   jmp   L1
+ LOOP:   prn @r1

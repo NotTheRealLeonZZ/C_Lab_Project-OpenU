@@ -23,4 +23,6 @@
 
 #define MAX_WORDS_IN_A_LINE 40
 
+#define NUM_OF_ADDRESSING_METHODS 3
+
 #endif /* GLOBALS_H */
