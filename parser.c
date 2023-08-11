@@ -20,6 +20,7 @@ Ready for assembler "First pass"
 #include "directives.h"
 #include "globals.h"
 #include "memory.h"
+#include "extern.h"
 
 void cleanLeadingSpaces(char *input)
 {
@@ -340,6 +341,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
         /* Assuming in macro declaration, first word is mcro */
         if (strcmp(words[0], "mcro") == 0)
         {
+            resetLineCopy(line, line_copy);
             if (!commaInLine(line_copy))
             {
 
@@ -368,6 +370,9 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
                         /* Dont copy this line to am file */
                     }
                 }
+            }
+            else
+            {
                 fprintf(stdout, "Error! in line %d: unnecessary comma.\n", line_number);
             }
         }
@@ -482,7 +487,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
     return true;
 }
 
-void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_head)
+void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_first)
 {
     char line[MAX_LINE_LENGTH];                       /* Variable to hold the current line */
     char line_copy[MAX_LINE_LENGTH];                  /* A copy of the line, to manipulate without losing the original line */
@@ -491,8 +496,11 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
     char current_symbol_name[MAX_SYMBOL_NAME_LENGTH]; /* Variable to hold current symbol's name */
     int current_symbol_address;                       /* Variable to hold current symbol's address number */
     char current_symbol_type[SYMBOL_TYPE_LENGTH];     /* Variable to hold current symbol's type (ins or dir) */
-    struct Symbol *symbol_table_head_copy;            /* A copy of the macro table head node, to manipulate without losing the original pointer */
+    struct Symbol *symbol_table_head_copy;            /* A copy of the symbol table head node, to manipulate without losing the original pointer */
     struct Symbol *new_symbol;                        /* New symbol to add to the symbol table */
+    char current_extern_name[MAX_SYMBOL_NAME_LENGTH]; /* Variable to hold current extern's name */
+    struct Extern *extern_table_head_copy;            /* A copy of the extern table head node, to manipulate without losing the original pointer */
+    struct Extern *new_extern;                        /* New extern to add to the extern table */
     char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH];     /* 2 dim array to hold all the parsed words from a line*/
     int num_words = 0;                                /* Counter for words captured from line */
 
@@ -500,6 +508,9 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
     {
         /* Reset pointer to copy */
         symbol_table_head_copy = symbol_table_head;
+
+        /* Reset pointer to extern */
+        extern_table_head_copy = extern_table_head;
 
         /* Make a copy of line to work on */
         strcpy(line_copy, line);
@@ -512,82 +523,161 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
         if (!commaAtFirstOrLast(line_copy)) /* Check if a comma is presented at start or finish */
         {
             /* Checks if current line has a valid symbol and remove ':' from the end */
-            if (wordIsSymbol(words[0]) && !findSymbol(symbol_table_head_copy, words[0]))
+            if (wordIsSymbol(words[0]))
             {
-                /* Valid name of symbol, check syntax */
-                strcpy(current_symbol_name, words[0]);
-                printf("Found a symbol! \"%s\"\n", current_symbol_name);
+                if (!findSymbol(symbol_table_head_copy, words[0]))
+                {
 
-                /* line_copy holds the name of the symbol including the ':',
+                    /* Valid name of symbol, check syntax */
+                    strcpy(current_symbol_name, words[0]);
+
+                    /* line_copy holds the name of the symbol including the ':',
             make a copy of the original line without the symbol */
 
-                removeSymbolFromLine(line, line_copy);
-                cleanLeadingSpaces(line_copy);
-                removeNewLineFromEnd(line_copy);
+                    removeSymbolFromLine(line, line_copy);
+                    cleanLeadingSpaces(line_copy);
+                    removeNewLineFromEnd(line_copy);
 
-                printf("modified line_copy: %s\n", line_copy);
-                /* line_copy holds the data of the symbol, either a directive or instruction
+                    /* line_copy holds the data of the symbol, either a directive or instruction
             copy it to original line */
-                strcpy(line, line_copy);
+                    strcpy(line, line_copy);
 
-                /* Check for comma as first word or last character */
-                if (!commaAtFirstOrLast(line_copy))
-                {
-                    /* Check the type of first word, and validate */
-                    /* Parse just the data of the symbol, without the symbol name, to words array. */
-
-                    /* Reset words array */
-                    memset(words, '\0', sizeof(words));
-                    num_words = 0;
-                    num_words = storeWords(line_copy, words, num_words);
-
-                    resetLineCopy(line, line_copy);
-
-                    if (isDirectiveName(words[0]))
+                    /* Check for comma as first word or last character */
+                    if (!commaAtFirstOrLast(line_copy))
                     {
+                        /* Check the type of first word, and validate */
+                        /* Parse just the data of the symbol, without the symbol name, to words array. */
 
-                        /* Validate directive syntax first pass */
-                        if (validDirective(words, num_words, line_copy, line_number))
+                        /* Reset words array */
+                        memset(words, '\0', sizeof(words));
+                        num_words = 0;
+                        num_words = storeWords(line_copy, words, num_words);
+
+                        resetLineCopy(line, line_copy);
+
+                        if (isDirectiveName(words[0]))
                         {
-                            warnSymbolIfNecessary(words[0], line_number);
-                            /* No need to create symbol for extern and entry.
-                            Validation is enough, later we'll deal with it */
-                            if (strcmp(words[0], ".extern") != 0 && strcmp(words[0], ".entry") != 0)
+
+                            /* Validate directive syntax first pass */
+                            if (validDirective(words, num_words, line_copy, line_number))
                             {
-                                /* Valid syntax of directive,
+                                warnSymbolIfNecessary(words[0], line_number);
+                                /* No need to create symbol for extern and entry.
+                            Validation is enough, later we'll deal with it */
+                                if (strcmp(words[0], ".extern") != 0 && strcmp(words[0], ".entry") != 0)
+                                {
+                                    /* Valid syntax of directive,
                                 type: dir
                                 address: memory_count */
+                                    current_symbol_address = memory_count;
+                                    strcpy(current_symbol_type, "dir");
+
+                                    new_symbol = createSymbol(current_symbol_name, current_symbol_address, current_symbol_type);
+                                    addSymbol(symbol_table_head_copy, new_symbol);
+
+                                    memory_count = promoteMemoryDirectory(memory_count, line_copy, num_words, words[0]);
+                                }
+                                else if (strcmp(words[0], ".extern") == 0)
+                                {
+                                    strcpy(current_extern_name, words[1]);
+                                    new_extern = createExtern(current_extern_name);
+                                    addExtern(extern_table_head_copy, new_extern);
+                                    printf("This is an extern named %s\n", current_extern_name);
+                                }
+                            }
+                            else
+                            {
+                                *passed_first = 0;
+                            }
+                        }
+
+                        else if (isInstructionName(words[0]))
+                        {
+                            /* Validate instruction syntax for first pass */
+                            if (validInstruction(words, num_words, line_copy, line_number))
+                            {
                                 current_symbol_address = memory_count;
-                                strcpy(current_symbol_type, "dir");
+                                strcpy(current_symbol_type, "ins");
 
                                 new_symbol = createSymbol(current_symbol_name, current_symbol_address, current_symbol_type);
                                 addSymbol(symbol_table_head_copy, new_symbol);
 
-                                printf("preform memory promotion to %s\n", line_copy);
-                                memory_count = promoteMemory(memory_count, line_copy, num_words, words[0]);
+                                memory_count = promoteMemoryInstruction(memory_count, num_words, words);
+                            }
+                            else
+                            {
+
+                                *passed_first = 0;
                             }
                         }
-                    }
-
-                    else if (isInstructionName(words[0]))
-                    {
-                        printf("This symbol contains an instruction: %s\n", words[0]);
-                        /* Validate instruction syntax for first pass */
-                        if (validInstruction(words, num_words, line_copy, line_number))
+                        else
                         {
+                            /* Symbol not holding instruction or directive */
+                            fprintf(stdout, "Error! in line %d, Symbol has unknown instruction/directive.\n", line_number);
+                            *passed_first = 0;
                         }
+                    }
+                    else
+                    {
+                        fprintf(stdout, "Error! in line %d: Invalid comma at beginning/end of line.\n", line_number);
+                        *passed_first = 0;
                     }
                 }
                 else
                 {
-                    fprintf(stdout, "Error! in line %d: Invalid comma at beginning/end of line.\n", line_number);
-                    /* Flag for assembler not to continue to second pass and dont output any files (delete am) */
+                    fprintf(stdout, "Error! in line %d, Double symbol decleration.\n", line_number);
+                    *passed_first = 0;
+                }
+            }
+            else
+            {
+                resetLineCopy(line, line_copy);
+                if (isDirectiveName(words[0]))
+                {
+                    /* Validate directive syntax first pass */
+                    if (validDirective(words, num_words, line_copy, line_number))
+                    {
+                        if (strcmp(words[0], ".extern") != 0 && strcmp(words[0], ".entry") != 0)
+                        {
+                            memory_count = promoteMemoryDirectory(memory_count, line_copy, num_words, words[0]);
+                        }
+                        else if (strcmp(words[0], ".extern") == 0)
+                        {
+                            strcpy(current_extern_name, words[1]);
+                            new_extern = createExtern(current_extern_name);
+                            addExtern(extern_table_head_copy, new_extern);
+                            printf("This is an extern named %s\n", current_extern_name);
+                        }
+                    }
+                    else
+                    {
+                        *passed_first = 0;
+                    }
+                }
+                else if (isInstructionName(words[0]))
+                {
+                    /* Validate instruction syntax for first pass */
+                    if (validInstruction(words, num_words, line_copy, line_number))
+                    {
+                        memory_count = promoteMemoryInstruction(memory_count, num_words, words);
+                    }
+                    else
+                    {
+                        *passed_first = 0;
+                    }
+                }
+                else
+                {
+                    /* This line is not a symbol decleration/directive or instruction. */
+                    fprintf(stdout, "Error! in line %d, Unknown instruction/directive.\n", line_number);
+                    *passed_first = 0;
                 }
             }
         }
         else
         {
             fprintf(stdout, "Error! in line %d: Invalid comma at beginning/end of line.\n", line_number);
+            *passed_first = 0;
         }
 
         /* Not a symbol, the only thing that interesting here is the line count,
@@ -608,4 +698,11 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
         line_number += 1;
         memory_count += 1;
     }
+    memory_count -= 1;
+    if (memory_count > MAX_PROGRAM_SIZE)
+    {
+        *passed_first = 0;
+    }
+    printf("value of passed_first end of parser: %d\n", *passed_first);
+    printf("Total memory allocated: %d\n", memory_count);
 }

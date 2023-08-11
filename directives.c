@@ -137,7 +137,6 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
 
     if (strcmp(directive_full_name, ".data") == 0)
     {
-        printf("This is a data directive!\n");
 
         /* Check syntax for data */
         if (!dataCommaProblem(line, line_number, num_words, directive_full_name))
@@ -161,7 +160,6 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
 
     else if (strcmp(directive_full_name, ".string") == 0)
     {
-        printf("This is a string directive!\n");
 
         /* Commas are allowed, only between "" */
         if (!stringCommaProblem(line, line_number, directive_full_name))
@@ -182,7 +180,6 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
 
     else if (strcmp(directive_full_name, ".entry") == 0 || strcmp(directive_full_name, ".extern") == 0)
     {
-        printf("This is an entry or extern directive!\n");
         if (!commaInLine(line))
         {
 

@@ -1,28 +1,16 @@
-;comment
-;another one
-MAIN:   mov @r3 ,LENGTH
-LOOP:   jmp L1
-        mcro m1
-        sub @r1, @r4
-        bne END
-        endmcro
-        prn -5
-        bne LOOP
-        m1
-L1:     inc K
-        bne LOOP
-        mcro m2
-        sub @r2, @r3
-        bne END
-        endmcro 
-        m2
-END:    stop 
-K:      .data 22, 0
- L1:  .data 3   
-K1: .extern E
-LENGTH:  .data    6,-9 , 15, 3   
-L2: .data 2
-STR:    .string   "abcdef is a, string" 
-L3: .data 3
- T9:  .entry  L5
- LOOP:   prn @r1
+.entry LENGTH
+.extern W
+MAIN: mov @r3 ,LENGTH
+LOOP: jmp L1
+prn -5
+bne W
+sub @r1, @r4
+bne L3
+L1: inc K
+.entry LOOP
+jmp W
+END: stop
+STR: .string "abcdef"
+LENGTH: .data 6,-9, 15
+K: .data 22
+Alo: .extern L3

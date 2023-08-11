@@ -19,7 +19,9 @@ extern const struct Instruction instructionsArray[NUM_OF_INSTRUCTIONS];
 /* Function to check if a given name is a macro name */
 bool isInstructionName(char *received_name);
 
-bool validateOneOperand(char *operand, int index, int line_number);
+bool validateOneOperandDest(char *operand, int index, int line_number);
+
+bool validateOneOperandSource(char *operand, int index, int line_number);
 
 bool instructionCommaProblem(char *line, int line_number, int num_words, char *instruction_full_name, int index);
 

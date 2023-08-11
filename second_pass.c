@@ -5,7 +5,7 @@
 #include "parser.h"
 #include "extern.h"
 
-void firstPass(const char *input_file, struct Symbol *symbol_table, struct Extern *extern_table, int *passed_first)
+void secondPass(const char *input_file, struct Symbol *symbol_table, struct Extern *extern_table, int *passed_first)
 {
 
     /* Openes the input file for reading and checks for errors when opening the file */
@@ -16,8 +16,7 @@ void firstPass(const char *input_file, struct Symbol *symbol_table, struct Exter
         return;
     }
 
-    parseFileHandleSymbols(assembly_file, symbol_table, extern_table, passed_first);
+    /* Parse 2nd pass */
 
     fclose(assembly_file);
-    printf("value of passed_first after parser: %d\n", *passed_first);
 }

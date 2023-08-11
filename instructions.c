@@ -43,7 +43,7 @@ bool isInstructionName(char *received_name)
 }
 
 /* This method is for first pass, where my symbol table is not yet full */
-bool validateOneOperand(char *operand, int index, int line_number)
+bool validateOneOperandDest(char *operand, int index, int line_number)
 {
     bool isInt = isInteger(operand);
 
@@ -60,29 +60,29 @@ bool validateOneOperand(char *operand, int index, int line_number)
         return true;
     if (isRegister && instructionsArray[index].destination_addressing_method[2] != 0)
         return true;
+    fprintf(stdout, "Error! in line: %d, Incorrect operands for given instruction.\n", line_number);
     return false;
+}
 
-    /*
-    if (instructionsArray[index].destination_addressing_method[0] != 0)
-    {
-        printf("Destination addressing method 1 is found.\n");
-        return isInteger(operand, line_number);
-    }
-    else if (instructionsArray[index].destination_addressing_method[1] != 0)
-    {
-        printf("Destination addressing method 3 is found.\n");
-        return wordIsSymbol(operand);
-        return true;
-        /* Any word can mean a symbol in first pass,  
-}
-else if (instructionsArray[index].destination_addressing_method[2] != 0)
+/* This method is for first pass, where my symbol table is not yet full */
+bool validateOneOperandSource(char *operand, int index, int line_number)
 {
-    /*check for register name 
-    return isRegisterName(operand);
-}
-printf("Done validation operands.\n");
-return true;
-*/
+    bool isInt = isInteger(operand);
+
+    size_t operand_length = strlen(operand);
+    operand[operand_length] = ':';
+    bool isSymbol = wordIsSymbol(operand);
+    operand[operand_length] = '\0';
+
+    bool isRegister = isRegisterName(operand);
+
+    if (isInt && instructionsArray[index].source_addressing_method[0] != 0)
+        return true;
+    if (isSymbol && instructionsArray[index].source_addressing_method[1] != 0)
+        return true;
+    if (isRegister && instructionsArray[index].source_addressing_method[2] != 0)
+        return true;
+    return false;
 }
 
 bool instructionCommaProblem(char *line, int line_number, int num_words, char *instruction_full_name, int index)
@@ -98,7 +98,6 @@ bool instructionCommaProblem(char *line, int line_number, int num_words, char *i
     /* Check there is no comma after instruction name */
     if (!commaAfterFirstWord(line_copy, instruction_name_copy))
     {
-        printf("No commas after instruction!\n");
         if (!doubleComma(line_copy, line_number))
         {
             /* Count commas in line */
@@ -106,11 +105,9 @@ bool instructionCommaProblem(char *line, int line_number, int num_words, char *i
             if (instructionsArray[index].operands_num == 2)
                 instruction_correct_comma_count = 1;
 
-            printf("current line has %d commas and should have %d\n", comma_count, instruction_correct_comma_count);
-
             if (instruction_correct_comma_count == comma_count)
             {
-                printf("CORRECT number of commas for this line.\n");
+                /* Correct number of commas */
                 return false;
             }
             else
@@ -130,20 +127,21 @@ bool instructionOperandsProblem(char words[][MAX_LINE_LENGTH], int num_words, ch
 {
 
     int instruction_correct_operands_count = num_words - 1;
-    printf("instruction_correct_operands_count: %d\n", instruction_correct_operands_count);
     if (instructionsArray[index].operands_num == instruction_correct_operands_count)
     {
-        printf("correct number of operands!\n");
+        /* Correct number of operands */
         if (instruction_correct_operands_count == 2)
         {
             /* That means that words[1] is source operand and words[2] is destination operand */
-            printf("This instruction has 2 operands: %s, %s\n", words[1], words[2]);
+            if (validateOneOperandSource(words[1], index, line_number) && validateOneOperandDest(words[2], index, line_number))
+            {
+                return false;
+            }
         }
         else if (instruction_correct_operands_count == 1)
         {
             /* This means words[1] is destination operand */
-            printf("This instruction has 1 operand: %s\n", words[1]);
-            if (validateOneOperand(words[1], index, line_number))
+            if (validateOneOperandDest(words[1], index, line_number))
             {
                 return false;
             }
@@ -151,7 +149,6 @@ bool instructionOperandsProblem(char words[][MAX_LINE_LENGTH], int num_words, ch
         else
         {
             /* This means there are no operands at all */
-            printf("This instruction has no operands.\n");
             return false;
         }
     }
@@ -159,7 +156,6 @@ bool instructionOperandsProblem(char words[][MAX_LINE_LENGTH], int num_words, ch
     {
         fprintf(stdout, "Error! in line %d, Incorrect number of operands.\n", line_number);
     }
-
     return true;
 }
 
@@ -174,11 +170,13 @@ bool validInstruction(char words[][MAX_LINE_LENGTH], int num_words, char *line, 
         {
             if (!instructionCommaProblem(line, line_number, num_words, instruction_full_name, i))
             {
-                printf("number of operands for this instruction are %d\n", instructionsArray[i].operands_num);
                 if (!instructionOperandsProblem(words, num_words, line, line_number, instruction_full_name, i))
                 {
-                    printf("operands are correct!\n");
                     return true;
+                }
+                else
+                {
+                    return false;
                 }
             }
         }

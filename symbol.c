@@ -17,7 +17,7 @@ struct Symbol *createSymbol(const char *symbol_name, const int symbol_address, c
     struct Symbol *new_symbol = (struct Symbol *)malloc(sizeof(struct Symbol));
     if (new_symbol == NULL)
     {
-        fprintf(stderr, "Memory allocation failed. Exiting...\n");
+        fprintf(stdout, "Memory allocation failed. Exiting...\n");
         exit(1);
     }
 
