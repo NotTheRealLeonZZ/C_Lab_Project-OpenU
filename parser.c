@@ -431,7 +431,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
                 /* Reset line_copy to current line */
                 strcpy(line_copy, line);
 
-                struct Macro *searchedMacro = findMacro(macro_table_head_copy->next, words, num_words);
+                struct Macro *searchedMacro = findMacro(macro_table_head_copy, words, num_words);
 
                 if (searchedMacro != NULL)
                 {
@@ -487,7 +487,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
     return true;
 }
 
-void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_first)
+void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_first)
 {
     char line[MAX_LINE_LENGTH];                       /* Variable to hold the current line */
     char line_copy[MAX_LINE_LENGTH];                  /* A copy of the line, to manipulate without losing the original line */
@@ -504,7 +504,7 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
     char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH];     /* 2 dim array to hold all the parsed words from a line*/
     int num_words = 0;                                /* Counter for words captured from line */
 
-    while (fgets(line, MAX_LINE_LENGTH, assembly_file) != NULL)
+    while (fgets(line, MAX_LINE_LENGTH, am_file) != NULL)
     {
         /* Reset pointer to copy */
         symbol_table_head_copy = symbol_table_head;
@@ -705,4 +705,8 @@ void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_hea
     }
     printf("value of passed_first end of parser: %d\n", *passed_first);
     printf("Total memory allocated: %d\n", memory_count);
+}
+
+void parseFileSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_second)
+{
 }

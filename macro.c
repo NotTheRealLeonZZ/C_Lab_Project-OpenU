@@ -38,7 +38,7 @@ void addMacro(struct Macro *current_macro, struct Macro *new_macro)
     /* Checking if current macro is NULL */
     if (current_macro == NULL)
     {
-        fprintf(stderr, "The given current node cannot be NULL.\n");
+        fprintf(stdout, "The given current node cannot be NULL.\n");
         return;
     }
 
@@ -73,6 +73,7 @@ struct Macro *findMacro(struct Macro *head, char words[][MAX_LINE_LENGTH], int n
     /* Checking if head of macro table is NULL */
     if (head == NULL)
     {
+        fprintf(stdout, "Cannot find macro, empty table.");
         return NULL;
     }
 

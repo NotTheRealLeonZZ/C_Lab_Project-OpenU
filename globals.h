@@ -26,4 +26,6 @@
 
 #define NUM_OF_ADDRESSING_METHODS 3
 
+#define BINARY_CODE_LENGTH 14
+
 #endif /* GLOBALS_H */
