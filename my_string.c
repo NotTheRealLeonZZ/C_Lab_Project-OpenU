@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "my_string.h"
@@ -15,3 +16,4 @@ char *my_strdup(const char *str)
     strcpy(new_str, str);
     return new_str;
 }
+

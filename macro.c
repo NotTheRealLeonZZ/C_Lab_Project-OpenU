@@ -115,7 +115,8 @@ void printMacroTable(struct Macro *head)
 
 void writeMacroToOutput(struct Macro *head, FILE *outputFile)
 {
-    char *name = head->name;
+    char name[MAX_MACRO_NAME];
+    strcpy(name, head->name);
     while (strcmp(head->name, name) == 0)
     {
         fputs(head->data, outputFile);

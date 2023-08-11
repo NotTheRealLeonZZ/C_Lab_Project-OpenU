@@ -4,6 +4,8 @@
 #include "directives.h"
 #include "globals.h"
 #include "parser.h"
+#include "instructions.h"
+#include "registers.h"
 
 /* Create the array of directives */
 const struct Directive directiveArray[NUM_OF_DIRECTIVES] = {
@@ -36,7 +38,7 @@ char *getName(char *full_directive_name)
 
     if (isDirectiveName(full_directive_name))
     {
-        printf("got directive name: %s\n", full_directive_name + 1);
+
         return full_directive_name + 1;
     }
 
@@ -106,6 +108,7 @@ bool stringQuoteasProblem(char *line, int line_number, char *directive_full_name
     int count_quotes = 0;
     removeSubString(line, directive_full_name);
     cleanLeadingSpaces(line);
+
     /* Check if quote is 1st and last char
     Check if there are exactly 2 Apostro 
     Check all characters are ascii*/
@@ -113,14 +116,16 @@ bool stringQuoteasProblem(char *line, int line_number, char *directive_full_name
     if (quoteAtFirstAndLast(line))
     {
         count_quotes = countQuotes(line);
-        if (count_quotes != 2)
+
+        if (count_quotes == 2)
         {
-            fprintf(stdout, "Error! in line %d, Incorrect number of quotes.\n", line_number);
-            return true;
+
+            return false;
         }
     }
+    /* fprintf(stdout, "Error! in line %d, Incorrect number of quotes.\n", line_number); */
 
-    return false;
+    return true;
 }
 
 /* Validate directive syntax */
@@ -132,15 +137,20 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
 
     if (strcmp(directive_full_name, ".data") == 0)
     {
-        printf("This is a data directive!\n");
 
         /* Check syntax for data */
         if (!dataCommaProblem(line, line_number, num_words, directive_full_name))
         {
             for (i = 1; i < num_words; i++)
             {
-                if (isInteger(words[i], line_number))
+                if (isInteger(words[i]))
                     num_count += 1;
+
+                else
+                {
+                    fprintf(stdout, "Error! in line %d: Parameter %s should have been an integer and it's not.\n", line_number, words[i]);
+                    return false;
+                }
             }
 
             if (num_count == num_words - 1)
@@ -150,7 +160,6 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
 
     else if (strcmp(directive_full_name, ".string") == 0)
     {
-        printf("This is a string directive!\n");
 
         /* Commas are allowed, only between "" */
         if (!stringCommaProblem(line, line_number, directive_full_name))
@@ -158,23 +167,44 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
             if (!stringQuoteasProblem(line, line_number, directive_full_name))
             {
                 /* No problem with quotes */
-                printf("Line to check quotes: %s\n", line);
+
                 if (isAscii(line, line_number))
                     return true;
+            }
+            else
+            {
+                fprintf(stdout, "Error! in line: %d, Number of quotes is illegal.\n", line_number);
             }
         }
     }
 
-    else if (strcmp(directive_full_name, ".entry") == 0)
+    else if (strcmp(directive_full_name, ".entry") == 0 || strcmp(directive_full_name, ".extern") == 0)
     {
-        printf("This is an entry directive!\n");
-        return false; /*change to true */
-    }
+        if (!commaInLine(line))
+        {
 
-    else if (strcmp(directive_full_name, ".extern") == 0)
-    {
-        printf("This is an extern directive!\n");
-        return false; /*change to true */
+            if (num_words == 2)
+            {
+
+                if (!isDirectiveName(words[1]) && !isInstructionName(words[1]) && !isRegisterName(words[1]))
+                {
+
+                    return true;
+                }
+                else
+                {
+                    fprintf(stdout, "Error! in line %d, Invalid parameter.\n", line_number);
+                }
+            }
+            else
+            {
+                fprintf(stdout, "Error! in line: %d, Too many arguments.\n", line_number);
+            }
+        }
+        else
+        {
+            fprintf(stdout, "Error! in line %d, Invalid comma in line.\n", line_number);
+        }
     }
 
     return false;

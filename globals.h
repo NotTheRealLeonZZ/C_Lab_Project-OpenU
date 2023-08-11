@@ -1,6 +1,9 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#define MAX_PROGRAM_SIZE 923
+#define MAX_MACRO_NAME 76
+
 #define MAX_LINE_LENGTH 82       /*  Maximum line length, including '\n' and '\0' */
 #define MAX_INSTRUCTION_LENGTH 5 /* Maximum instruction string length */
 #define MEMORY_START 100
@@ -20,5 +23,7 @@
 #define MAX_FILE_NAME_LENGTH 100
 
 #define MAX_WORDS_IN_A_LINE 40
+
+#define NUM_OF_ADDRESSING_METHODS 3
 
 #endif /* GLOBALS_H */

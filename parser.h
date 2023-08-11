@@ -5,8 +5,11 @@
 #include "macro.h"
 #include "symbol.h"
 #include "globals.h"
+#include "extern.h"
 
 void cleanLeadingSpaces(char *input);
+
+void removeTrailingSpaces(char *input);
 
 void cleanAllSpaces(char *param);
 
@@ -36,7 +39,7 @@ void deleteCurrentLine(FILE *file);
 
 void resetLineCopy(char *line, char *copy_line);
 
-bool isInteger(char *param, int line_number);
+bool isInteger(char *param);
 
 bool isAscii(char *line, int line_number);
 
@@ -45,6 +48,6 @@ void removeSubString(char *line, char *sub_string);
 /* Function to parse the assembly file */
 bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_name, struct Macro *macro_table_head);
 
-void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_head);
+void parseFileHandleSymbols(FILE *assembly_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_first);
 
 #endif /* PARSER_H */
