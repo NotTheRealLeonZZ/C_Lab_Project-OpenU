@@ -6,6 +6,8 @@
 #include "symbol.h"
 #include "extern.h"
 #include "binary.h"
+#include "tables.h"
+#include "variables.h"
 
 int main(int argc, char *argv[])
 {
@@ -22,6 +24,9 @@ int main(int argc, char *argv[])
 
     /* Create the binary code table */
     struct Binary *binary_code_table = createBinary("Binary_code_table");
+
+    /* Create the binary code table */
+    struct Variable *variable_table = createVariable("Variable_table", -1, "Variable_type");
 
     /* Validate command line 
     Get the file name from the input */
@@ -52,10 +57,12 @@ int main(int argc, char *argv[])
         /* Check that extern and symbol(entry) are not the same */
         if (tablesAreDifferent(symbol_table, extern_table))
         {
+            secondPass(am_filename, symbol_table, extern_table, binary_code_table, variable_table, &passed_first);
 
             printSymbolTable(symbol_table);
             printExternTable(extern_table);
             printBinaryTable(binary_code_table);
+            printVariableTable(variable_table);
         }
         else
         {

@@ -10,7 +10,7 @@ L1: inc K
 .entry LOOP
 jmp W
 END: stop
-STR: .string "abcdef"
 LENGTH: .data 6,-9, 15
+Q: .extern LO
 K: .data 22
-Alo: .extern LOOPS
+STR: .string "abcdef"

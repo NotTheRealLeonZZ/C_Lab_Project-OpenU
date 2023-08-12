@@ -21,6 +21,8 @@ Ready for assembler "First pass"
 #include "globals.h"
 #include "memory.h"
 #include "extern.h"
+#include "binary.h"
+#include "variables.h"
 
 void cleanLeadingSpaces(char *input)
 {
@@ -208,11 +210,13 @@ void removeNewLineFromEnd(char *line)
     line[strcspn(line, "\n")] = '\0'; /* Remove new line from end of input */
 }
 
+/* comment lines starts with ; as the first char.
+else is error */
 bool isEmptyOrCommentLines(char *line)
 {
 
     /* Skip empty lines or lines starting with ';' */
-    if (line[0] == '\0' || line[0] == ';')
+    if (line[0] == '\0' || line[0] == ';' || line[0] == '\n')
     {
         return true;
     }
@@ -460,8 +464,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
                 }
                 else
                 {
-                    /* Check if this line has been written before */
-                    /* Check if need to check */
+
                     if (!isEmptyOrCommentLines(line_copy))
                         fputs(line, am_file);
                 }
@@ -582,7 +585,6 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
                                     strcpy(current_extern_name, words[1]);
                                     new_extern = createExtern(current_extern_name);
                                     addExtern(extern_table_head_copy, new_extern);
-                                    printf("This is an extern named %s\n", current_extern_name);
                                 }
                             }
                             else
@@ -646,7 +648,6 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
                             strcpy(current_extern_name, words[1]);
                             new_extern = createExtern(current_extern_name);
                             addExtern(extern_table_head_copy, new_extern);
-                            printf("This is an extern named %s\n", current_extern_name);
                         }
                     }
                     else
@@ -683,14 +684,6 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
         /* Not a symbol, the only thing that interesting here is the line count,
         because each command can add lines depends on the addressing method. */
 
-        int i;
-        for (i = 0; i < num_words; i++)
-        {
-            printf("%s -> ", words[i]);
-        }
-        printf("\n");
-        printf("===================\n");
-
         /* Reset words array */
         memset(words, '\0', sizeof(words));
         num_words = 0;
@@ -707,6 +700,102 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
     printf("Total memory allocated: %d\n", memory_count);
 }
 
-void parseFileSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_second)
+void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, struct Binary *binary_code_table_head, struct Variable *variable_table_head, int *passed_second)
 {
+    char line[MAX_LINE_LENGTH];      /* Variable to hold the current line */
+    char line_copy[MAX_LINE_LENGTH]; /* A copy of the line, to manipulate without losing the original line */
+    int line_number = 1;             /* Line number counter for error messages */
+    int memory_count = MEMORY_START; /* A counter for memory location, to address symbols */
+    /* char current_symbol_name[MAX_SYMBOL_NAME_LENGTH];  Variable to hold current symbol's name */
+    /* int current_symbol_address;                        Variable to hold current symbol's address number */
+    /* char current_symbol_type[SYMBOL_TYPE_LENGTH];      Variable to hold current symbol's type (ins or dir) */
+    struct Symbol *symbol_table_head_copy; /* A copy of the symbol table head node, to manipulate without losing the original pointer */
+    struct Symbol *new_symbol;             /* New symbol to add to the symbol table */
+    /* char current_extern_name[MAX_SYMBOL_NAME_LENGTH];  Variable to hold current extern's name */
+    struct Extern *extern_table_head_copy;        /* A copy of the extern table head node, to manipulate without losing the original pointer */
+    struct Extern *new_extern;                    /* New extern to add to the extern table */
+    struct Binary *binary_code_table_head_copy;   /* A copy of the binary_code table head node, to manipulate without losing the original pointer */
+    struct Binary *new_binary_code;               /* New binary_code to add to the binary_code table */
+    struct Variable *variable_table_head_copy;    /* A copy of the variable table head node, to manipulate without losing the original pointer */
+    struct Variable *new_variable;                /* New variable to add to the variable table */
+    char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH]; /* 2 dim array to hold all the parsed words from a line*/
+    int num_words = 0;                            /* Counter for words captured from line */
+    int ic = 0;                                   /* Instructions counter */
+    int dc = 0;                                   /* Directives counter */
+
+    printf("\nStarting second pass...\n\n");
+
+    while (fgets(line, MAX_LINE_LENGTH, am_file) != NULL)
+    {
+        /* Reset pointer to copy */
+        symbol_table_head_copy = symbol_table_head;
+
+        /* Reset pointer to extern */
+        extern_table_head_copy = extern_table_head;
+
+        /* Reset pointer to binary code */
+        binary_code_table_head_copy = binary_code_table_head;
+
+        /* Reset pointer to binary code */
+        variable_table_head_copy = variable_table_head;
+
+        /* Make a copy of line to work on */
+        strcpy(line_copy, line);
+        cleanLeadingSpaces(line_copy);   /* Clear leading spaces of line */
+        removeNewLineFromEnd(line_copy); /* Remove new line from end of input */
+
+        /* Parse the line into words and count. */
+        num_words = storeWords(line_copy, words, num_words);
+
+        if (wordIsSymbol(words[0]))
+        {
+
+            /* Its already in symbol table and correct */
+
+            /* line_copy holds the name of the symbol including the ':',
+            make a copy of the original line without the symbol */
+
+            removeSymbolFromLine(line, line_copy);
+            cleanLeadingSpaces(line_copy);
+            removeNewLineFromEnd(line_copy);
+
+            /* line_copy holds the data of the symbol, either a directive or instruction
+            copy it to original line */
+            strcpy(line, line_copy);
+
+            /* Parse just the data of the symbol, without the symbol name, to words array. */
+
+            /* Reset words array */
+            memset(words, '\0', sizeof(words));
+            num_words = 0;
+            num_words = storeWords(line_copy, words, num_words);
+
+            resetLineCopy(line, line_copy);
+            printf("checking name: %s\n", words[0]);
+            if (isDirectiveName(words[0]))
+            {
+                if (strcmp(words[0], ".extern") != 0 && strcmp(words[0], ".entry") != 0)
+                    dc += num_words - 1;
+
+                calculateDirectiveBinary(words, num_words, binary_code_table_head_copy, symbol_table_head_copy, variable_table_head_copy);
+            }
+        }
+
+        int i;
+        for (i = 0; i < num_words; i++)
+        {
+            printf("%s -> ", words[i]);
+        }
+        printf("\n");
+
+        /* Reset words array */
+        memset(words, '\0', sizeof(words));
+        num_words = 0;
+
+        printf("IC: %d\tDC: %d\n", ic, dc);
+        printf("===================\n");
+
+        line_number += 1;
+        memory_count += 1;
+    }
 }

@@ -6,6 +6,7 @@
 #include "parser.h"
 #include "instructions.h"
 #include "registers.h"
+#include "encoding.h"
 
 /* Create the array of directives */
 const struct Directive directiveArray[NUM_OF_DIRECTIVES] = {
@@ -208,4 +209,45 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
     }
 
     return false;
+}
+
+void calculateDirectiveBinary(char words[][MAX_LINE_LENGTH], int num_words, struct Binary *binary_code_table_head, struct Symbol *symbol_table_head, struct Variable *variable_table_head)
+{
+    printf("calculating binary for directive...\n");
+    printf("num_words: %d\n", num_words);
+    if (strcmp(words[0], ".data") == 0)
+    {
+        calculateDataBinary(words, num_words, binary_code_table_head);
+    }
+    else if (strcmp(words[0], ".string") == 0)
+    {
+        printf("This is string directive. Start calculate\n");
+    }
+    else if (strcmp(words[0], ".entry") == 0)
+    {
+        printf("This is entry directive. No need to calculate. Make checks\n");
+    }
+
+    /* If its .extern I already handled it. */
+}
+
+void calculateDataBinary(char words[][MAX_LINE_LENGTH], int num_words, struct Binary *binary_code_table_head)
+{
+    char *binary_encode;
+    int i;
+    struct Binary *binary_code_table_head_copy; /* A copy of the binary_code table head node, to manipulate without losing the original pointer */
+    struct Binary *new_binary_code;             /* New binary_code to add to the binary_code table */
+
+    printf("This is data directive. Start calculate\n");
+    binary_code_table_head_copy = binary_code_table_head;
+
+    for (i = 1; i < num_words; i++)
+    {
+        printf("Current number to encode: %s\n", words[i]);
+        binary_encode = encodeIntToBinary(words[i], BINARY_CODE_LENGTH);
+        new_binary_code = createBinary(binary_encode);
+        addBinary(binary_code_table_head_copy, new_binary_code);
+
+        printf("After binary encoding: %s\n", binary_encode);
+    }
 }
