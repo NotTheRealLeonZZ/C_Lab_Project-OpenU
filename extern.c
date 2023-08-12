@@ -53,7 +53,7 @@ struct Extern *findExtern(struct Extern *head, const char *name)
     /* Checking if head of macro table is NULL */
     if (head == NULL)
     {
-        fprintf(stderr, "Cannot find symbol, empty table.");
+        fprintf(stdout, "Cannot find extern, empty table.");
         return NULL;
     }
 

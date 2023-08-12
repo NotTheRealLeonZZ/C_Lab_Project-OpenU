@@ -60,7 +60,7 @@ struct Symbol *findSymbol(struct Symbol *head, const char *name)
     /* Checking if head of macro table is NULL */
     if (head == NULL)
     {
-        fprintf(stderr, "Cannot find symbol, empty table.");
+        fprintf(stdout, "Cannot find symbol, empty table.");
         return NULL;
     }
 

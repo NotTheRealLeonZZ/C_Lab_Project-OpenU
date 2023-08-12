@@ -3,6 +3,9 @@
 
 #include <stdbool.h>
 #include "globals.h"
+#include "symbol.h"
+#include "binary.h"
+#include "variables.h"
 
 struct Directive
 {
@@ -25,5 +28,11 @@ bool stringQuoteasProblem(char *line, int line_number, char *directive_full_name
 
 /* Validate directive syntax */
 bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, int line_number);
+
+void calculateDirectiveBinary(char words[][MAX_LINE_LENGTH], int num_words, struct Binary *binary_code_table_head, struct Symbol *symbol_table_head, struct Variable *variable_table_head);
+
+void calculateDataBinary(char words[][MAX_LINE_LENGTH], int num_words, struct Binary *binary_code_table_head);
+
+void calculateStringBinary(char words[][MAX_LINE_LENGTH], struct Binary *binary_code_table_head);
 
 #endif /* DIRECTIVES_H */

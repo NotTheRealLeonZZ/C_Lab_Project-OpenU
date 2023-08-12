@@ -2,21 +2,32 @@
 #include "pre_assembler.h"
 #include "parser.h"
 #include "first_pass.h"
+#include "second_pass.h"
 #include "globals.h"
 #include "symbol.h"
 #include "extern.h"
+#include "binary.h"
+#include "tables.h"
+#include "variables.h"
 
 int main(int argc, char *argv[])
 {
     char as_filename[MAX_FILE_NAME_LENGTH];
     char am_filename[MAX_FILE_NAME_LENGTH];
     int passed_first = 1;
+    int passed_second = 1;
 
     /* Create the symbol table */
     struct Symbol *symbol_table = createSymbol("Symbol_table", -1, "Symbol_type");
 
     /* Create the extern table */
     struct Extern *extern_table = createExtern("Extern_table");
+
+    /* Create the binary code table */
+    struct Binary *binary_code_table = createBinary("Binary_code_table");
+
+    /* Create the binary code table */
+    struct Variable *variable_table = createVariable("Variable_table", -1, "Variable_type");
 
     /* Validate command line 
     Get the file name from the input */
@@ -43,8 +54,35 @@ int main(int argc, char *argv[])
     {
         /* All lines has correct syntax,
         Need to start building the binary codes for each line. */
-        printSymbolTable(symbol_table);
-        printExternTable(extern_table);
+
+        /* Check that extern and symbol(entry) are not the same */
+        if (tablesAreDifferent(symbol_table, extern_table))
+        {
+            secondPass(am_filename, symbol_table, extern_table, binary_code_table, variable_table, &passed_second);
+            if (passed_second)
+            {
+                printSymbolTable(symbol_table);
+                printExternTable(extern_table);
+                printBinaryTable(binary_code_table);
+                printVariableTable(variable_table);
+            }
+            else
+            {
+                /* Second pass wasn't successful */
+                if (remove(am_filename) != 0)
+                {
+                    fprintf(stderr, "Error: Failed to delete .am file.\n");
+                }
+            }
+        }
+        else
+        {
+            /* Extern table and symbol table has same symbol, remove am file */
+            if (remove(am_filename) != 0)
+            {
+                fprintf(stderr, "Error: Failed to delete .am file.\n");
+            }
+        }
     }
     else
     {
@@ -57,6 +95,8 @@ int main(int argc, char *argv[])
 
     freeSymbolTable(&symbol_table);
     freeExternTable(&extern_table);
+    freeBinaryTable(&binary_code_table);
+    freeVariableTable(&variable_table);
 
     return 0;
 }
