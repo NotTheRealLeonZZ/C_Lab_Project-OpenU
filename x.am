@@ -7,7 +7,7 @@ bne W
 sub @r1, @r4
 bne L3
 L1: inc K
-.entry LOOP
+R2: .entry LOOP
 jmp W
 END: stop
 STR: .string "abcdef"

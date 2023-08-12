@@ -795,6 +795,12 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
                         fprintf(stdout, "Error! in line %d, Entry declaration but no symbol was found.\n", line_number);
                         *passed_second = 0;
                     }
+                    else
+                    {
+                        new_variable = createVariable(new_symbol->name, new_symbol->address, new_symbol->type);
+                        addVariable(variable_table_head_copy, new_variable);
+                        printf("Symbol name: %s\tSymbol address: %d\tSymbol type: %s\n", new_symbol->name, new_symbol->address, new_symbol->type);
+                    }
                 }
             }
             else if (isInstructionName(words[0]))
