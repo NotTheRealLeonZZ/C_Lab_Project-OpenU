@@ -633,6 +633,7 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
             }
             else
             {
+                /* Not a symbol */
                 resetLineCopy(line, line_copy);
                 if (isDirectiveName(words[0]))
                 {
@@ -696,7 +697,6 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
     {
         *passed_first = 0;
     }
-    printf("value of passed_first end of parser: %d\n", *passed_first);
     printf("Total memory allocated: %d\n", memory_count);
 }
 
@@ -722,6 +722,7 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
     int num_words = 0;                            /* Counter for words captured from line */
     int ic = 0;                                   /* Instructions counter */
     int dc = 0;                                   /* Directives counter */
+    int i;
 
     printf("\nStarting second pass...\n\n");
 
@@ -771,23 +772,48 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
             num_words = storeWords(line_copy, words, num_words);
 
             resetLineCopy(line, line_copy);
-            printf("checking name: %s\n", words[0]);
+
             if (isDirectiveName(words[0]))
             {
-                if (strcmp(words[0], ".extern") != 0 && strcmp(words[0], ".entry") != 0)
+                /* Calculate dc increasing */
+                if (strcmp(words[0], ".data") == 0)
                     dc += num_words - 1;
-
+                if (strcmp(words[0], ".string") == 0)
+                {
+                    /* Modify words to hold the entire string without quotes */
+                    tokenStrings(line_copy, words, num_words);
+                    dc += strlen(words[1]);
+                }
+                /* calculation for .data and .string */
                 calculateDirectiveBinary(words, num_words, binary_code_table_head_copy, symbol_table_head_copy, variable_table_head_copy);
+
+                if (strcmp(words[0], ".entry") == 0)
+                {
+                    new_symbol = findSymbol(symbol_table_head, words[1]);
+                    if (new_symbol == NULL)
+                    {
+                        fprintf(stdout, "Error! in line %d, Entry declaration but no symbol was found.\n", line_number);
+                        *passed_second = 0;
+                    }
+                }
+            }
+            else if (isInstructionName(words[0]))
+            {
+                printf("this is a symbol that holds instruction\n");
             }
         }
+        else
+        {
+            /* Not a symbol */
+            resetLineCopy(line, line_copy);
+            /* add here from isDirective */
+        }
 
-        int i;
         for (i = 0; i < num_words; i++)
         {
             printf("%s -> ", words[i]);
         }
         printf("\n");
-
         /* Reset words array */
         memset(words, '\0', sizeof(words));
         num_words = 0;

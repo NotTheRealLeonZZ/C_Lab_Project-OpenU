@@ -19,5 +19,4 @@ void firstPass(const char *input_file, struct Symbol *symbol_table, struct Exter
     parseFileHandleSymbols(assembly_file, symbol_table, extern_table, passed_first);
 
     fclose(assembly_file);
-    printf("value of passed_first after parser: %d\n", *passed_first);
 }

@@ -7,6 +7,7 @@
 #include "instructions.h"
 #include "registers.h"
 #include "encoding.h"
+#include "symbol.h"
 
 /* Create the array of directives */
 const struct Directive directiveArray[NUM_OF_DIRECTIVES] = {
@@ -179,6 +180,7 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
         }
     }
 
+    /* Entry and Extern have only 1 parameter */
     else if (strcmp(directive_full_name, ".entry") == 0 || strcmp(directive_full_name, ".extern") == 0)
     {
         if (!commaInLine(line))
@@ -213,19 +215,17 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
 
 void calculateDirectiveBinary(char words[][MAX_LINE_LENGTH], int num_words, struct Binary *binary_code_table_head, struct Symbol *symbol_table_head, struct Variable *variable_table_head)
 {
-    printf("calculating binary for directive...\n");
-    printf("num_words: %d\n", num_words);
     if (strcmp(words[0], ".data") == 0)
     {
         calculateDataBinary(words, num_words, binary_code_table_head);
     }
     else if (strcmp(words[0], ".string") == 0)
     {
-        printf("This is string directive. Start calculate\n");
+        calculateStringBinary(words, binary_code_table_head);
     }
     else if (strcmp(words[0], ".entry") == 0)
     {
-        printf("This is entry directive. No need to calculate. Make checks\n");
+        /* No need to encode to binary, just make sure entry is in symbol table */
     }
 
     /* If its .extern I already handled it. */
@@ -238,16 +238,36 @@ void calculateDataBinary(char words[][MAX_LINE_LENGTH], int num_words, struct Bi
     struct Binary *binary_code_table_head_copy; /* A copy of the binary_code table head node, to manipulate without losing the original pointer */
     struct Binary *new_binary_code;             /* New binary_code to add to the binary_code table */
 
-    printf("This is data directive. Start calculate\n");
     binary_code_table_head_copy = binary_code_table_head;
 
     for (i = 1; i < num_words; i++)
     {
-        printf("Current number to encode: %s\n", words[i]);
         binary_encode = encodeIntToBinary(words[i], BINARY_CODE_LENGTH);
         new_binary_code = createBinary(binary_encode);
         addBinary(binary_code_table_head_copy, new_binary_code);
-
-        printf("After binary encoding: %s\n", binary_encode);
     }
+}
+
+void calculateStringBinary(char words[][MAX_LINE_LENGTH], struct Binary *binary_code_table_head)
+{
+    const char *string = words[1];
+    size_t length = strlen(string);
+    int i;
+    char *binaryChar;
+    struct Binary *binary_code_table_head_copy; /* A copy of the binary_code table head node, to manipulate without losing the original pointer */
+    struct Binary *new_binary_code;             /* New binary_code to add to the binary_code table */
+
+    binary_code_table_head_copy = binary_code_table_head;
+
+    /* Parse the string wihtout the quotes */
+    for (i = 0; i < length; i++)
+    {
+        binaryChar = encodeCharToBinary(string[i]);
+        new_binary_code = createBinary(binaryChar);
+        addBinary(binary_code_table_head_copy, new_binary_code);
+    }
+
+    binaryChar = encodeIntToBinary("0", BINARY_CODE_LENGTH);
+    new_binary_code = createBinary(binaryChar);
+    addBinary(binary_code_table_head_copy, new_binary_code);
 }

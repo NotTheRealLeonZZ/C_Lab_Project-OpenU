@@ -63,6 +63,26 @@ char *encodeIntToBinary(const char *word, int length)
     return my_strdup(&binary[16 - length]);
 }
 
+char *encodeCharToBinary(char c)
+{
+    int asciiValue = (int)c;
+    int i;
+
+    char *binary = (char *)malloc(13 * sizeof(char)); /* 12 bits + null terminator */
+    if (binary == NULL)
+    {
+        fprintf(stderr, "Memory allocation failed. Exiting...\n");
+        exit(1);
+    }
+
+    for (i = 11; i >= 0; i--)
+    {
+        binary[11 - i] = (asciiValue & (1 << i)) ? '1' : '0';
+    }
+    binary[12] = '\0'; /* Null-terminate the binary string */
+
+    return binary;
+}
 /* int main()
 {
     /* Example: Store 12 bits of binary data in a uint16_t 

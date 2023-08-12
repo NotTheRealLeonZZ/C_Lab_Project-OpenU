@@ -33,4 +33,6 @@ void calculateDirectiveBinary(char words[][MAX_LINE_LENGTH], int num_words, stru
 
 void calculateDataBinary(char words[][MAX_LINE_LENGTH], int num_words, struct Binary *binary_code_table_head);
 
+void calculateStringBinary(char words[][MAX_LINE_LENGTH], struct Binary *binary_code_table_head);
+
 #endif /* DIRECTIVES_H */

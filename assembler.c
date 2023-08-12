@@ -2,6 +2,7 @@
 #include "pre_assembler.h"
 #include "parser.h"
 #include "first_pass.h"
+#include "second_pass.h"
 #include "globals.h"
 #include "symbol.h"
 #include "extern.h"
@@ -57,12 +58,22 @@ int main(int argc, char *argv[])
         /* Check that extern and symbol(entry) are not the same */
         if (tablesAreDifferent(symbol_table, extern_table))
         {
-            secondPass(am_filename, symbol_table, extern_table, binary_code_table, variable_table, &passed_first);
-
-            printSymbolTable(symbol_table);
-            printExternTable(extern_table);
-            printBinaryTable(binary_code_table);
-            printVariableTable(variable_table);
+            secondPass(am_filename, symbol_table, extern_table, binary_code_table, variable_table, &passed_second);
+            if (passed_second)
+            {
+                printSymbolTable(symbol_table);
+                printExternTable(extern_table);
+                printBinaryTable(binary_code_table);
+                printVariableTable(variable_table);
+            }
+            else
+            {
+                /* Second pass wasn't successful */
+                if (remove(am_filename) != 0)
+                {
+                    fprintf(stderr, "Error: Failed to delete .am file.\n");
+                }
+            }
         }
         else
         {
@@ -85,6 +96,7 @@ int main(int argc, char *argv[])
     freeSymbolTable(&symbol_table);
     freeExternTable(&extern_table);
     freeBinaryTable(&binary_code_table);
+    freeVariableTable(&variable_table);
 
     return 0;
 }
