@@ -31,3 +31,18 @@ bool isRegisterName(char *received_name)
     }
     return false;
 }
+
+int getRegisterNum(char register_name[])
+{
+    if (strncmp(register_name, "@r", 2) == 0)
+    {
+        int registerNumber;
+        if (sscanf(register_name, "@r%d", &registerNumber) == 1 && registerNumber >= 0 && registerNumber <= 7)
+        {
+            return registerNumber;
+        }
+    }
+
+    /* Return -1 to indicate an error or invalid register_name */
+    return -1;
+}

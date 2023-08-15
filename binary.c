@@ -7,7 +7,7 @@
 #include "my_string.h"
 #include "globals.h"
 
-struct Binary *createBinary(const char *binary_code)
+struct Binary *createBinary(const char *binary_code, const char *type)
 {
     struct Binary *new_binary_code = (struct Binary *)malloc(sizeof(struct Binary));
     if (new_binary_code == NULL)
@@ -17,6 +17,7 @@ struct Binary *createBinary(const char *binary_code)
     }
 
     new_binary_code->code = my_strdup(binary_code);
+    new_binary_code->type = my_strdup(type);
     new_binary_code->next = NULL;
 
     return new_binary_code;
@@ -76,7 +77,7 @@ void printBinaryTable(struct Binary *head)
     printf("Binary Table:\n");
     while (temp != NULL)
     {
-        printf("\"%s\"", temp->code);
+        printf("\"%s\" , %s", temp->code, temp->type);
         temp = temp->next;
         printf("\n");
     }
