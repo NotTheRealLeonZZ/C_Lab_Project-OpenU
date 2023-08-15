@@ -22,7 +22,7 @@ char *convertToBase64(uint16_t binaryData)
     return base64String;
 }
 
-char *encodeIntToBinary(const char *word, int length)
+char *encodeStrIntToBinary(const char *word, int length)
 {
     long num = strtol(word, NULL, 10); /* Convert decimal string to long */
 
@@ -80,6 +80,32 @@ char *encodeCharToBinary(char c)
         binary[11 - i] = (asciiValue & (1 << i)) ? '1' : '0';
     }
     binary[12] = '\0'; /* Null-terminate the binary string */
+
+    return binary;
+}
+
+char *encodeIntToBinary(int original_num, int length)
+{
+    char *binary = (char *)malloc(length + 1); /* +1 for the null terminator */
+    int i;
+    if (binary == NULL)
+    {
+        fprintf(stderr, "Memory allocation failed.\n");
+        exit(1);
+    }
+
+    /* Handle negative numbers using 2's complement */
+    if (original_num < 0)
+    {
+        original_num = (1 << length) + original_num;
+    }
+
+    for (i = length - 1; i >= 0; i--)
+    {
+        binary[i] = (original_num & 1) + '0';
+        original_num >>= 1;
+    }
+    binary[length] = '\0';
 
     return binary;
 }

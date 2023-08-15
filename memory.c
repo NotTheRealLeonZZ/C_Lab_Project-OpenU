@@ -4,7 +4,7 @@
 #include "instructions.h"
 #include "registers.h"
 
-int promoteMemoryDirectory(int memory_count, char *line, int num_words, char *name)
+int promoteMemoryDirective(int memory_count, char *line, int num_words, char *name)
 {
 
     if (strcmp(name, ".data") == 0)

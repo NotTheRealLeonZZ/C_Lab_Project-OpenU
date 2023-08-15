@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     struct Extern *extern_table = createExtern("Extern_table");
 
     /* Create the binary code table */
-    struct Binary *binary_code_table = createBinary("Binary_code_table");
+    struct Binary *binary_code_table = createBinary("Binary_code_table", "Binary_type");
 
     /* Create the binary code table */
     struct Variable *variable_table = createVariable("Variable_table", -1, "Variable_type");

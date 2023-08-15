@@ -41,7 +41,7 @@ void deleteCurrentLine(FILE *file);
 
 void resetLineCopy(char *line, char *copy_line);
 
-bool isInteger(char *param);
+bool isIntegerInRange(char *param, int min_range, int max_range);
 
 bool isAscii(char *line, int line_number);
 

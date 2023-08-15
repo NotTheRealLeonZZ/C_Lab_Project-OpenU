@@ -4,8 +4,10 @@
 
 char *convertToBase64(uint16_t binaryData);
 
-char *encodeIntToBinary(const char *word, int length);
+char *encodeStrIntToBinary(const char *word, int length);
 
 char *encodeCharToBinary(char c);
+
+char *encodeIntToBinary(int num, int length);
 
 #endif /* ENCODING_H */

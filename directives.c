@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "directives.h"
 #include "globals.h"
 #include "parser.h"
@@ -145,12 +146,12 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
         {
             for (i = 1; i < num_words; i++)
             {
-                if (isInteger(words[i]))
+                if (isIntegerInRange(words[i], INT_DIRECTIVE_MIN_RANGE, INT_DIRECTIVE_MAX_RANGE))
                     num_count += 1;
 
                 else
                 {
-                    fprintf(stdout, "Error! in line %d: Parameter %s should have been an integer and it's not.\n", line_number, words[i]);
+                    fprintf(stdout, "Error! in line %d: Parameter %s should have been an integer in range and it's not. (-2048 to 2047)\n", line_number, words[i]);
                     return false;
                 }
             }
@@ -242,10 +243,12 @@ void calculateDataBinary(char words[][MAX_LINE_LENGTH], int num_words, struct Bi
 
     for (i = 1; i < num_words; i++)
     {
-        binary_encode = encodeIntToBinary(words[i], BINARY_CODE_LENGTH);
-        new_binary_code = createBinary(binary_encode);
+        binary_encode = encodeStrIntToBinary(words[i], BINARY_CODE_LENGTH);
+        new_binary_code = createBinary(binary_encode, "dir");
         addBinary(binary_code_table_head_copy, new_binary_code);
     }
+
+    free(binary_encode);
 }
 
 void calculateStringBinary(char words[][MAX_LINE_LENGTH], struct Binary *binary_code_table_head)
@@ -253,7 +256,7 @@ void calculateStringBinary(char words[][MAX_LINE_LENGTH], struct Binary *binary_
     const char *string = words[1];
     size_t length = strlen(string);
     int i;
-    char *binaryChar;
+    char *binary_char;
     struct Binary *binary_code_table_head_copy; /* A copy of the binary_code table head node, to manipulate without losing the original pointer */
     struct Binary *new_binary_code;             /* New binary_code to add to the binary_code table */
 
@@ -262,12 +265,14 @@ void calculateStringBinary(char words[][MAX_LINE_LENGTH], struct Binary *binary_
     /* Parse the string wihtout the quotes */
     for (i = 0; i < length; i++)
     {
-        binaryChar = encodeCharToBinary(string[i]);
-        new_binary_code = createBinary(binaryChar);
+        binary_char = encodeCharToBinary(string[i]);
+        new_binary_code = createBinary(binary_char, "dir");
         addBinary(binary_code_table_head_copy, new_binary_code);
     }
 
-    binaryChar = encodeIntToBinary("0", BINARY_CODE_LENGTH);
-    new_binary_code = createBinary(binaryChar);
+    binary_char = encodeIntToBinary(0, BINARY_CODE_LENGTH);
+    new_binary_code = createBinary(binary_char, "dir");
     addBinary(binary_code_table_head_copy, new_binary_code);
+
+    free(binary_char);
 }

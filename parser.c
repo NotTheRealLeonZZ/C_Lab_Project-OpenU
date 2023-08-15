@@ -275,18 +275,15 @@ void resetLineCopy(char *line, char *line_copy)
     removeNewLineFromEnd(line_copy);
 }
 
-bool isInteger(char *param)
+bool isIntegerInRange(char *param, int min_range, int max_range)
 {
-    char *endptr; /* Pointer to the first non-long int character */
+    char *endptr;
+    long int value = strtol(param, &endptr, 10);
 
-    strtol(param, &endptr, 10);
-
-    if (*endptr == '\0')
+    if (*endptr == '\0' && value >= min_range && value <= max_range)
         return true;
     else
-    {
         return false;
-    }
 }
 
 bool isAscii(char *line, int line_number)
@@ -506,6 +503,7 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
     struct Extern *new_extern;                        /* New extern to add to the extern table */
     char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH];     /* 2 dim array to hold all the parsed words from a line*/
     int num_words = 0;                                /* Counter for words captured from line */
+    int i;
 
     while (fgets(line, MAX_LINE_LENGTH, am_file) != NULL)
     {
@@ -578,7 +576,7 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
                                     new_symbol = createSymbol(current_symbol_name, current_symbol_address, current_symbol_type);
                                     addSymbol(symbol_table_head_copy, new_symbol);
 
-                                    memory_count = promoteMemoryDirectory(memory_count, line_copy, num_words, words[0]);
+                                    memory_count = promoteMemoryDirective(memory_count, line_copy, num_words, words[0]);
                                 }
                                 else if (strcmp(words[0], ".extern") == 0)
                                 {
@@ -642,7 +640,7 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
                     {
                         if (strcmp(words[0], ".extern") != 0 && strcmp(words[0], ".entry") != 0)
                         {
-                            memory_count = promoteMemoryDirectory(memory_count, line_copy, num_words, words[0]);
+                            memory_count = promoteMemoryDirective(memory_count, line_copy, num_words, words[0]);
                         }
                         else if (strcmp(words[0], ".extern") == 0)
                         {
@@ -685,12 +683,20 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
         /* Not a symbol, the only thing that interesting here is the line count,
         because each command can add lines depends on the addressing method. */
 
+        for (i = 0; i < num_words; i++)
+        {
+            printf("%s -> ", words[i]);
+        }
+        printf("\n");
+
         /* Reset words array */
         memset(words, '\0', sizeof(words));
         num_words = 0;
 
         line_number += 1;
         memory_count += 1;
+
+        printf("MEMORY: %d\n", memory_count);
     }
     memory_count -= 1;
     if (memory_count > MAX_PROGRAM_SIZE)
@@ -700,7 +706,8 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
     printf("Total memory allocated: %d\n", memory_count);
 }
 
-void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, struct Binary *binary_code_table_head, struct Variable *variable_table_head, int *passed_second)
+void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head,
+                     struct Binary *binary_code_table_head, struct Variable *variable_table_head, int *passed_second)
 {
     char line[MAX_LINE_LENGTH];      /* Variable to hold the current line */
     char line_copy[MAX_LINE_LENGTH]; /* A copy of the line, to manipulate without losing the original line */
@@ -712,10 +719,10 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
     struct Symbol *symbol_table_head_copy; /* A copy of the symbol table head node, to manipulate without losing the original pointer */
     struct Symbol *new_symbol;             /* New symbol to add to the symbol table */
     /* char current_extern_name[MAX_SYMBOL_NAME_LENGTH];  Variable to hold current extern's name */
-    struct Extern *extern_table_head_copy;        /* A copy of the extern table head node, to manipulate without losing the original pointer */
-    struct Extern *new_extern;                    /* New extern to add to the extern table */
-    struct Binary *binary_code_table_head_copy;   /* A copy of the binary_code table head node, to manipulate without losing the original pointer */
-    struct Binary *new_binary_code;               /* New binary_code to add to the binary_code table */
+    struct Extern *extern_table_head_copy;      /* A copy of the extern table head node, to manipulate without losing the original pointer */
+    struct Extern *new_extern;                  /* New extern to add to the extern table */
+    struct Binary *binary_code_table_head_copy; /* A copy of the binary_code table head node, to manipulate without losing the original pointer */
+    /* struct Binary *new_binary_code;                New binary_code to add to the binary_code table */
     struct Variable *variable_table_head_copy;    /* A copy of the variable table head node, to manipulate without losing the original pointer */
     struct Variable *new_variable;                /* New variable to add to the variable table */
     char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH]; /* 2 dim array to hold all the parsed words from a line*/
@@ -799,13 +806,20 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
                     {
                         new_variable = createVariable(new_symbol->name, new_symbol->address, new_symbol->type);
                         addVariable(variable_table_head_copy, new_variable);
-                        printf("Symbol name: %s\tSymbol address: %d\tSymbol type: %s\n", new_symbol->name, new_symbol->address, new_symbol->type);
                     }
+                }
+
+                if (strcmp(words[0], ".extern") != 0 && strcmp(words[0], ".entry") != 0)
+                {
+                    memory_count = promoteMemoryDirective(memory_count, line_copy, num_words, words[0]);
                 }
             }
             else if (isInstructionName(words[0]))
             {
+                ic += 1;
                 printf("this is a symbol that holds instruction\n");
+                calculateInstructionBinary(words, num_words, binary_code_table_head_copy, symbol_table_head_copy, variable_table_head_copy,
+                                           extern_table_head_copy, &line_number, passed_second, &memory_count, &ic);
             }
         }
         else
@@ -824,10 +838,11 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
         memset(words, '\0', sizeof(words));
         num_words = 0;
 
-        printf("IC: %d\tDC: %d\n", ic, dc);
+        printf("IC: %d\tDC: %d\t MEMORY: %d\n", ic, dc, memory_count);
         printf("===================\n");
 
         line_number += 1;
         memory_count += 1;
     }
+    printf("Total memory allocated: %d\n", memory_count);
 }

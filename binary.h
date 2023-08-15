@@ -8,11 +8,12 @@
 struct Binary
 {
     const char *code;
+    const char *type; /* instruction or directive */
     struct Binary *next;
 };
 
 /* Create a new Binary structure */
-struct Binary *createBinary(const char *binary_code);
+struct Binary *createBinary(const char *binary_code, const char *type);
 
 /* Add a binary code at the end of the node list */
 void addBinary(struct Binary *current_binary_code, struct Binary *new_binary_code);
