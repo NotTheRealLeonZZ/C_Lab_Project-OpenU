@@ -13,10 +13,11 @@ void firstPass(const char *input_file, struct Symbol *symbol_table, struct Exter
     if (assembly_file == NULL)
     {
         fprintf(stderr, "Error opening the assembly file.\n");
+        *passed_first = 0;
         return;
     }
 
-    parseFileHandleSymbols(assembly_file, symbol_table, extern_table, passed_first, is_ent, is_ext);
+    parseFirstPass(assembly_file, symbol_table, extern_table, passed_first, is_ent, is_ext);
 
     fclose(assembly_file);
 }

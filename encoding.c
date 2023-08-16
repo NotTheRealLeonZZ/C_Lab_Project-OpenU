@@ -122,7 +122,6 @@ void encodeExternBonusWord(char operand[], char final_line_encode[], char *curre
     combine2Strings(final_line_encode, current_are_encode, operand_encode);
     new_binary_code = createBinary(final_line_encode, "ins");
     addBinary(binary_code_table_head, new_binary_code);
-    printf("final line for operand: %s\n", final_line_encode);
 }
 
 void encodeIntBonusWord(char operand[], char final_line_encode[], char *current_are_encode, char *operand_encode, struct Binary *new_binary_code, struct Binary *binary_code_table_head)
@@ -133,7 +132,6 @@ void encodeIntBonusWord(char operand[], char final_line_encode[], char *current_
     combine2Strings(final_line_encode, current_are_encode, operand_encode);
     new_binary_code = createBinary(final_line_encode, "ins");
     addBinary(binary_code_table_head, new_binary_code);
-    printf("final line for operand: %s\n", final_line_encode);
 }
 
 void encodeSymbolBonusWord(char operand[], char final_line_encode[], char *current_are_encode, int symbol_address, struct Symbol *new_symbol, char *operand_encode, struct Binary *new_binary_code, struct Binary *binary_code_table_head)
@@ -145,7 +143,6 @@ void encodeSymbolBonusWord(char operand[], char final_line_encode[], char *curre
     combine2Strings(final_line_encode, current_are_encode, operand_encode);
     new_binary_code = createBinary(final_line_encode, "ins");
     addBinary(binary_code_table_head, new_binary_code);
-    printf("final line for operand: %s\n", final_line_encode);
 }
 
 void encodeRegisterBonusWord(char source_operand[], char dest_operand[], char final_line_encode[], char *current_are_encode, int source_register_num, int dest_register_num, char *source_operand_encode, char *dest_operand_encode, struct Binary *new_binary_code, struct Binary *binary_code_table_head)
@@ -157,7 +154,6 @@ void encodeRegisterBonusWord(char source_operand[], char dest_operand[], char fi
     combine3Strings(final_line_encode, current_are_encode, source_operand_encode, dest_operand_encode);
     new_binary_code = createBinary(final_line_encode, "ins");
     addBinary(binary_code_table_head, new_binary_code);
-    printf("final line for operand: %s\n", final_line_encode);
 }
 
 uint16_t binaryStringToUInt16(const char *binary)

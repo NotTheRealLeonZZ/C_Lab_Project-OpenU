@@ -50,14 +50,14 @@ Maybe change it to find all symbols in line
 @return pointer for the found symbol or NULL */
 struct Extern *findExtern(struct Extern *head, const char *name)
 {
+    struct Extern *head_copy = head;
+
     /* Checking if head of macro table is NULL */
     if (head == NULL)
     {
         fprintf(stdout, "Cannot find extern, empty table.");
         return NULL;
     }
-
-    struct Extern *head_copy = head;
 
     while (head_copy != NULL)
     {

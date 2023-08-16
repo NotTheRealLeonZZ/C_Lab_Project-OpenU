@@ -50,14 +50,14 @@ void addBinary(struct Binary *current_binary_code, struct Binary *new_binary_cod
 @return pointer for the found binary code or NULL */
 struct Binary *findBinary(struct Binary *head, const char *code)
 {
+    struct Binary *head_copy = head;
+
     /* Checking if head of binary code table is NULL */
     if (head == NULL)
     {
         fprintf(stdout, "Cannot find binary code, empty table.");
         return NULL;
     }
-
-    struct Binary *head_copy = head;
 
     while (head_copy != NULL)
     {

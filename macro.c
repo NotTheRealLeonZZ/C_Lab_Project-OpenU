@@ -103,8 +103,8 @@ struct Macro *findMacro(struct Macro *head, char words[][MAX_LINE_LENGTH], int n
 
 void printMacroTable(struct Macro *head)
 {
-    printf("Macro Table:\n");
     struct Macro *temp = head;
+    printf("Macro Table:\n");
     while (temp != NULL)
     {
         printf("\"%s\": \"%s\" -> ", temp->name, temp->data);

@@ -11,7 +11,7 @@
 #include "variables.h"
 #include "encoding.h"
 
-int main(int argc, char *argv[])
+void runAssembler(char *argv[], int index)
 {
     /* DO IT IN A LOOP FOR ALL ARGV */
     char as_filename[MAX_FILE_NAME_LENGTH];
@@ -19,15 +19,15 @@ int main(int argc, char *argv[])
     char ob_filename[MAX_FILE_NAME_LENGTH];
     char ent_filename[MAX_FILE_NAME_LENGTH];
     char ext_filename[MAX_FILE_NAME_LENGTH];
-    int passed_first = 1;
-    int passed_second = 1;
-    int is_ent = 0; /* Variable to check if there is .entry command in code */
-    int is_ext = 0; /* Variable to check if there is .extern command in code */
-    FILE *ob_file;
-    FILE *ent_file;
-    FILE *ext_file;
-    int ic = 0; /* Instructions counter */
-    int dc = 0; /* Directives counter */
+    int passed_first = 1;  /* Passed first? */
+    int passed_second = 1; /* Passed second? */
+    int is_ent = 0;        /* Variable to check if there is .entry command in code */
+    int is_ext = 0;        /* Variable to check if there is .extern command in code */
+    FILE *ob_file;         /* Object file */
+    FILE *ent_file;        /* Entry file */
+    FILE *ext_file;        /* Extern file */
+    int ic = 0;            /* Instructions counter */
+    int dc = 0;            /* Directives counter */
 
     /* Create the symbol table */
     struct Symbol *symbol_table = createSymbol("Symbol_table", -1, "Symbol_type");
@@ -41,27 +41,19 @@ int main(int argc, char *argv[])
     /* Create the binary code table */
     struct Variable *variable_table = createVariable("Variable_table", -1, "Variable_type");
 
-    /* Validate command line 
-    Get the file name from the input */
-    if (argc < 2) /* MAYBE CHECK IF ALL FILE NAMES HAS .AS FILE IN THIS FOLDER */
-    {
-        fprintf(stderr, "Usage: %s <filename_without_extension>\n", argv[0]);
-        return 1;
-    }
-
     /* Extract the filename from the command-line argument  */
 
-    snprintf(as_filename, sizeof(as_filename), "%s.as", argv[1]);
+    sprintf(as_filename, "%.*s.as", (int)sizeof(as_filename) - 4, argv[index]);
 
-    snprintf(am_filename, sizeof(am_filename), "%s.am", argv[1]);
+    sprintf(am_filename, "%.*s.am", (int)sizeof(am_filename) - 4, argv[index]);
 
-    snprintf(ob_filename, sizeof(ob_filename), "%s.ob", argv[1]);
+    sprintf(ob_filename, "%.*s.ob", (int)sizeof(ob_filename) - 4, argv[index]);
 
-    snprintf(ent_filename, sizeof(ent_filename), "%s.ent", argv[1]);
+    sprintf(ent_filename, "%.*s.ent", (int)sizeof(ent_filename) - 4, argv[index]);
 
-    snprintf(ext_filename, sizeof(ext_filename), "%s.ext", argv[1]);
+    sprintf(ext_filename, "%.*s.ext", (int)sizeof(ext_filename) - 4, argv[index]);
 
-    printf("as file name: %s\tam file name: %s\n", as_filename, am_filename);
+    printf("as name: %s\tam name: %s\tob name: %s\tent name: %s\text name: %s\n", as_filename, am_filename, ob_filename, ent_filename, ext_filename);
 
     /* Spread macros over .am file */
     preAssemble(as_filename, am_filename);
@@ -149,6 +141,24 @@ int main(int argc, char *argv[])
     freeExternTable(&extern_table);
     freeBinaryTable(&binary_code_table);
     freeVariableTable(&variable_table);
+}
+
+int main(int argc, char *argv[])
+{
+    int i;
+
+    /* Validate command line 
+    Get the file name from the input */
+    if (argc < 2) /* MAYBE CHECK IF ALL FILE NAMES HAS .AS FILE IN THIS FOLDER */
+    {
+        fprintf(stderr, "Usage: %s <filename_without_extension>\n", argv[0]);
+        return 1;
+    }
+
+    for (i = 1; i < argc; i++)
+    {
+        runAssembler(argv, i);
+    }
 
     return 0;
 }
