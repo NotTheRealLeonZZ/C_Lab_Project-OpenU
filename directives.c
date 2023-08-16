@@ -224,11 +224,8 @@ void calculateDirectiveBinary(char words[][MAX_LINE_LENGTH], int num_words, stru
     {
         calculateStringBinary(words, binary_code_table_head);
     }
-    else if (strcmp(words[0], ".entry") == 0)
-    {
-        /* No need to encode to binary, just make sure entry is in symbol table */
-    }
 
+    /* If its .entry, no need to calculate binary. */
     /* If its .extern I already handled it. */
 }
 

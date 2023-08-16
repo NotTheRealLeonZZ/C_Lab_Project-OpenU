@@ -507,6 +507,7 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
 
     while (fgets(line, MAX_LINE_LENGTH, am_file) != NULL)
     {
+
         /* Reset pointer to copy */
         symbol_table_head_copy = symbol_table_head;
 
@@ -572,11 +573,11 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
                                 address: memory_count */
                                     current_symbol_address = memory_count;
                                     strcpy(current_symbol_type, "dir");
-
                                     new_symbol = createSymbol(current_symbol_name, current_symbol_address, current_symbol_type);
                                     addSymbol(symbol_table_head_copy, new_symbol);
 
                                     memory_count = promoteMemoryDirective(memory_count, line_copy, num_words, words[0]);
+                                    memory_count += 1;
                                 }
                                 else if (strcmp(words[0], ".extern") == 0)
                                 {
@@ -603,6 +604,7 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
                                 addSymbol(symbol_table_head_copy, new_symbol);
 
                                 memory_count = promoteMemoryInstruction(memory_count, num_words, words);
+                                memory_count += 1;
                             }
                             else
                             {
@@ -641,6 +643,7 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
                         if (strcmp(words[0], ".extern") != 0 && strcmp(words[0], ".entry") != 0)
                         {
                             memory_count = promoteMemoryDirective(memory_count, line_copy, num_words, words[0]);
+                            memory_count += 1;
                         }
                         else if (strcmp(words[0], ".extern") == 0)
                         {
@@ -660,6 +663,7 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
                     if (validInstruction(words, num_words, line_copy, line_number))
                     {
                         memory_count = promoteMemoryInstruction(memory_count, num_words, words);
+                        memory_count += 1;
                     }
                     else
                     {
@@ -694,11 +698,8 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
         num_words = 0;
 
         line_number += 1;
-        memory_count += 1;
-
-        printf("MEMORY: %d\n", memory_count);
     }
-    memory_count -= 1;
+    memory_count -= 1; /* Fix last line count */
     if (memory_count > MAX_PROGRAM_SIZE)
     {
         *passed_first = 0;
@@ -720,7 +721,6 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
     struct Symbol *new_symbol;             /* New symbol to add to the symbol table */
     /* char current_extern_name[MAX_SYMBOL_NAME_LENGTH];  Variable to hold current extern's name */
     struct Extern *extern_table_head_copy;      /* A copy of the extern table head node, to manipulate without losing the original pointer */
-    struct Extern *new_extern;                  /* New extern to add to the extern table */
     struct Binary *binary_code_table_head_copy; /* A copy of the binary_code table head node, to manipulate without losing the original pointer */
     /* struct Binary *new_binary_code;                New binary_code to add to the binary_code table */
     struct Variable *variable_table_head_copy;    /* A copy of the variable table head node, to manipulate without losing the original pointer */
@@ -789,6 +789,55 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
                 {
                     /* Modify words to hold the entire string without quotes */
                     tokenStrings(line_copy, words, num_words);
+                    dc += strlen(words[1]) + 1; /* including '\0' */
+                }
+                /* calculation for .data and .string */
+                calculateDirectiveBinary(words, num_words, binary_code_table_head_copy, symbol_table_head_copy, variable_table_head_copy);
+
+                if (strcmp(words[0], ".entry") == 0)
+                {
+                    new_symbol = findSymbol(symbol_table_head, words[1]);
+                    if (new_symbol == NULL)
+                    {
+                        fprintf(stdout, "Error! in line %d, Entry declaration but no symbol was found.\n", line_number);
+                        *passed_second = 0;
+                    }
+                    else
+                    {
+                        new_variable = createVariable(new_symbol->name, new_symbol->address, "ent");
+                        addVariable(variable_table_head_copy, new_variable);
+                    }
+                }
+
+                if (strcmp(words[0], ".extern") != 0 && strcmp(words[0], ".entry") != 0)
+                {
+                    memory_count = promoteMemoryDirective(memory_count, line_copy, num_words, words[0]);
+                    memory_count += 1;
+                }
+            }
+            else if (isInstructionName(words[0]))
+            {
+                ic += 1;
+                calculateInstructionBinary(words, num_words, binary_code_table_head_copy, symbol_table_head_copy, variable_table_head_copy,
+                                           extern_table_head_copy, &line_number, passed_second, &memory_count, &ic);
+                memory_count += 1;
+            }
+        }
+        else
+        {
+            /* Not a symbol */
+            resetLineCopy(line, line_copy);
+            /* add here from isDirective */
+
+            if (isDirectiveName(words[0]))
+            {
+                /* Calculate dc increasing */
+                if (strcmp(words[0], ".data") == 0)
+                    dc += num_words - 1;
+                if (strcmp(words[0], ".string") == 0)
+                {
+                    /* Modify words to hold the entire string without quotes */
+                    tokenStrings(line_copy, words, num_words);
                     dc += strlen(words[1]);
                 }
                 /* calculation for .data and .string */
@@ -804,7 +853,7 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
                     }
                     else
                     {
-                        new_variable = createVariable(new_symbol->name, new_symbol->address, new_symbol->type);
+                        new_variable = createVariable(new_symbol->name, new_symbol->address, "ent");
                         addVariable(variable_table_head_copy, new_variable);
                     }
                 }
@@ -812,21 +861,16 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
                 if (strcmp(words[0], ".extern") != 0 && strcmp(words[0], ".entry") != 0)
                 {
                     memory_count = promoteMemoryDirective(memory_count, line_copy, num_words, words[0]);
+                    memory_count += 1;
                 }
             }
             else if (isInstructionName(words[0]))
             {
                 ic += 1;
-                printf("this is a symbol that holds instruction\n");
+                memory_count += 1;
                 calculateInstructionBinary(words, num_words, binary_code_table_head_copy, symbol_table_head_copy, variable_table_head_copy,
                                            extern_table_head_copy, &line_number, passed_second, &memory_count, &ic);
             }
-        }
-        else
-        {
-            /* Not a symbol */
-            resetLineCopy(line, line_copy);
-            /* add here from isDirective */
         }
 
         for (i = 0; i < num_words; i++)
@@ -838,11 +882,9 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
         memset(words, '\0', sizeof(words));
         num_words = 0;
 
-        printf("IC: %d\tDC: %d\t MEMORY: %d\n", ic, dc, memory_count);
         printf("===================\n");
 
         line_number += 1;
-        memory_count += 1;
     }
     printf("Total memory allocated: %d\n", memory_count);
 }

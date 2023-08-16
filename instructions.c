@@ -41,7 +41,6 @@ int get_decimal_code(char *received_name)
     {
         if (strcmp(received_name, instructionsArray[i].name) == 0)
         {
-            printf("Found! code is: %d\n", instructionsArray[i].decimal_code);
             return instructionsArray[i].decimal_code;
         }
     }
@@ -212,9 +211,7 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                                 struct Symbol *symbol_table_head, struct Variable *variable_table_head, struct Extern *extern_table_head,
                                 int *line_number, int *passed_second, int *current_memory, int *ic)
 {
-    char current_are[SIZE_OF_ARE];                             /* A.R.E of current line, will use for binary encode */
-    char current_source_addressing[SIZE_OF_ADDRESSING_METHOD]; /* source addressing of current line, will use for binary encode */
-    char current_dest_addressing[SIZE_OF_ADDRESSING_METHOD];   /* destination addressing of current line, will use for binary encode */
+    char current_are[SIZE_OF_ARE]; /* A.R.E of current line, will use for binary encode */
     char final_line_encode[BINARY_CODE_LENGTH];
     char *current_instruction_encode = '\0'; /* instruction code of current line, will use for binary encode */
     char *current_are_encode = '\0';
@@ -229,6 +226,7 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
     struct Binary *new_binary_code;
     struct Symbol *new_symbol_dest;   /* New symbol to add to the symbol table */
     struct Symbol *new_symbol_source; /* New symbol to add to the symbol table */
+    struct Variable *new_variable;
     char operand_destination[MAX_SYMBOL_NAME_LENGTH];
     char operand_source[MAX_SYMBOL_NAME_LENGTH];
     int source_symbol_address = -1;
@@ -248,12 +246,10 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
 
         new_symbol_source = findSymbol(symbol_table_head, operand_source);
         new_symbol_dest = findSymbol(symbol_table_head, operand_destination);
-        printf("2 operands: source - %s, destination - %s\n", operand_source, operand_destination);
 
         /* Checks source operand type */
         if (isRegisterName(operand_source) && isRegisterName(operand_destination))
         {
-            printf("Both operands are registers.\n");
             current_are_encode = ABSOLUTE_ARE;
             current_source_addressing_encode = ADDRESSING5;
             current_dest_addressing_encode = ADDRESSING5;
@@ -345,6 +341,10 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
 
             else if (findExtern(extern_table_head, operand_destination))
             {
+                /* Add to variable table as extern */
+                new_variable = createVariable(operand_destination, *current_memory, "ext");
+                addVariable(variable_table_head, new_variable);
+
                 current_dest_addressing_encode = ADDRESSING3;
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
@@ -416,6 +416,12 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
             }
             else if (findExtern(extern_table_head, operand_destination))
             {
+                /* Dest operand is an extern symbol */
+
+                /* Add to variable table as extern */
+                new_variable = createVariable(operand_destination, *current_memory, "ext");
+                addVariable(variable_table_head, new_variable);
+
                 current_dest_addressing_encode = ADDRESSING3;
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
@@ -511,6 +517,11 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
             else if (findExtern(extern_table_head, operand_destination))
             {
                 /* Dest operand is an extern symbol */
+
+                /* Add to variable table as extern */
+                new_variable = createVariable(operand_destination, *current_memory, "ext");
+                addVariable(variable_table_head, new_variable);
+
                 current_dest_addressing_encode = ADDRESSING3;
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
@@ -538,6 +549,10 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
         else if (findExtern(extern_table_head, operand_source))
         {
             /* Source operand is extern symbol */
+
+            /* Add to variable table as extern */
+            new_variable = createVariable(operand_source, *current_memory, "ext");
+            addVariable(variable_table_head, new_variable);
 
             current_are_encode = ABSOLUTE_ARE;
             current_source_addressing_encode = ADDRESSING3;
@@ -603,7 +618,12 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
             }
             else if (findExtern(extern_table_head, operand_destination))
             {
-                /* Desk operand is extern */
+                /* Dest operand is extern */
+
+                /* Add to variable table as extern */
+                new_variable = createVariable(operand_destination, *current_memory, "ext");
+                addVariable(variable_table_head, new_variable);
+
                 current_dest_addressing_encode = ADDRESSING3;
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
@@ -660,7 +680,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
 
         else if (isRegisterName(operand_destination))
         {
-            printf("This symbol has instruction with register\n");
             current_are_encode = ABSOLUTE_ARE;
             current_source_addressing_encode = ADDRESSING_EMPTY;
             current_dest_addressing_encode = ADDRESSING5;
@@ -696,7 +715,10 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
         {
             /* Operand is a known extern symbol */
 
-            printf("operand found on extern table!\n");
+            /* Add to variable table as extern */
+            new_variable = createVariable(operand_destination, *current_memory, "ext");
+            addVariable(variable_table_head, new_variable);
+
             current_are_encode = ABSOLUTE_ARE;
             current_source_addressing_encode = ADDRESSING_EMPTY;
             current_dest_addressing_encode = ADDRESSING3;
