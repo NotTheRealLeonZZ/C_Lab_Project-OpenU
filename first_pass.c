@@ -16,7 +16,7 @@ void firstPass(const char *input_file, struct Symbol *symbol_table, struct Exter
         return;
     }
 
-    parseFileHandleSymbols(assembly_file, symbol_table, extern_table, passed_first, is_ent, is_ext);
+    parseFirstPass(assembly_file, symbol_table, extern_table, passed_first, is_ent, is_ext);
 
     fclose(assembly_file);
 }

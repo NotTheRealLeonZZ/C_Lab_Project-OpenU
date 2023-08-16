@@ -490,7 +490,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
     return true;
 }
 
-void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_first, int *is_ent, int *is_ext)
+void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_first, int *is_ent, int *is_ext)
 {
     char line[MAX_LINE_LENGTH];                       /* Variable to hold the current line */
     char line_copy[MAX_LINE_LENGTH];                  /* A copy of the line, to manipulate without losing the original line */
@@ -510,7 +510,6 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
 
     while (fgets(line, MAX_LINE_LENGTH, am_file) != NULL)
     {
-        printf("Current line memory: %d\n", memory_count);
         /* Reset pointer to copy */
         symbol_table_head_copy = symbol_table_head;
 
