@@ -6,6 +6,10 @@
 #include <string.h>
 #include "globals.h"
 #include "my_string.h"
+#include "instructions.h"
+#include "binary.h"
+#include "symbol.h"
+#include "registers.h"
 
 const char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -108,6 +112,53 @@ char *encodeIntToBinary(int original_num, int length)
     binary[length] = '\0';
 
     return binary;
+}
+
+void encodeExternBonusWord(char operand[], char final_line_encode[], char *current_are_encode, char *operand_encode, struct Binary *new_binary_code, struct Binary *binary_code_table_head)
+{
+
+    final_line_encode[0] = '\0';
+    current_are_encode = EXTERNAL_ARE;
+    operand_encode = encodeIntToBinary(0, BINARY_CODE_WITH_ARE);
+    combine2Strings(final_line_encode, current_are_encode, operand_encode);
+    new_binary_code = createBinary(final_line_encode, "ins");
+    addBinary(binary_code_table_head, new_binary_code);
+    printf("final line for operand: %s\n", final_line_encode);
+}
+
+void encodeIntBonusWord(char operand[], char final_line_encode[], char *current_are_encode, char *operand_encode, struct Binary *new_binary_code, struct Binary *binary_code_table_head)
+{
+
+    final_line_encode[0] = '\0';
+    operand_encode = encodeStrIntToBinary(operand, BINARY_CODE_WITH_ARE);
+    combine2Strings(final_line_encode, current_are_encode, operand_encode);
+    new_binary_code = createBinary(final_line_encode, "ins");
+    addBinary(binary_code_table_head, new_binary_code);
+    printf("final line for operand: %s\n", final_line_encode);
+}
+
+void encodeSymbolBonusWord(char operand[], char final_line_encode[], char *current_are_encode, int symbol_address, struct Symbol *new_symbol, char *operand_encode, struct Binary *new_binary_code, struct Binary *binary_code_table_head)
+{
+    final_line_encode[0] = '\0';
+    current_are_encode = RELOCATABLE_ARE;
+    symbol_address = new_symbol->address;
+    operand_encode = encodeIntToBinary(symbol_address, BINARY_CODE_WITH_ARE);
+    combine2Strings(final_line_encode, current_are_encode, operand_encode);
+    new_binary_code = createBinary(final_line_encode, "ins");
+    addBinary(binary_code_table_head, new_binary_code);
+    printf("final line for operand: %s\n", final_line_encode);
+}
+
+void encodeRegisterBonusWord(char source_operand[], char dest_operand[], char final_line_encode[], char *current_are_encode, int source_register_num, int dest_register_num, char *source_operand_encode, char *dest_operand_encode, struct Binary *new_binary_code, struct Binary *binary_code_table_head)
+{
+    final_line_encode[0] = '\0';
+    dest_register_num = getRegisterNum(dest_operand);
+    dest_operand_encode = encodeIntToBinary(dest_register_num, BINARY_CODE_FOR_REGISTER_OPERANDS_SIZE);
+    source_operand_encode = encodeIntToBinary(source_register_num, BINARY_CODE_FOR_REGISTER_OPERANDS_SIZE);
+    combine3Strings(final_line_encode, current_are_encode, source_operand_encode, dest_operand_encode);
+    new_binary_code = createBinary(final_line_encode, "ins");
+    addBinary(binary_code_table_head, new_binary_code);
+    printf("final line for operand: %s\n", final_line_encode);
 }
 /* int main()
 {

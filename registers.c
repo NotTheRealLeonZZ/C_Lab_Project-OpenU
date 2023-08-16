@@ -43,6 +43,6 @@ int getRegisterNum(char register_name[])
         }
     }
 
-    /* Return -1 to indicate an error or invalid register_name */
-    return -1;
+    /* Return 0 for invalid register_name */
+    return 0;
 }

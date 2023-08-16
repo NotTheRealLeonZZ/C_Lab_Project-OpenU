@@ -1,18 +1,16 @@
 ; file x.as
 .entry LENGTH
 .extern W
-MAIN: mov @r3 ,LENGTH
-LOOP: jmp LENGTH
-TEST: prn -5
-HOP: bne W
-sub @r1, @r4
-bne L3
-L1: inc K
+.extern L3
 R2: .entry LOOP
-jmp W
-END: stop
+
+MAIN: cmp L3, L3
+LOOP: jmp LENGTH
+TEST: stop
+
 STR: .string "abcdef"
 LENGTH: .data 6,-9, 15
-K: .data 22
-.extern L3
+
+
+
 
