@@ -13,6 +13,7 @@ void firstPass(const char *input_file, struct Symbol *symbol_table, struct Exter
     if (assembly_file == NULL)
     {
         fprintf(stderr, "Error opening the assembly file.\n");
+        *passed_first = 0;
         return;
     }
 

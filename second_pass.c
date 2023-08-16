@@ -15,6 +15,7 @@ void secondPass(const char *input_file, struct Symbol *symbol_table, struct Exte
     if (assembly_file == NULL)
     {
         fprintf(stderr, "Error opening the assembly file.\n");
+        *passed_second = 0;
         return;
     }
 
