@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "my_string.h"
 #include "variables.h"
 
@@ -38,6 +39,25 @@ void addVariable(struct Variable *current_variable, struct Variable *new_variabl
     }
 
     current_variable->next = new_variable;
+}
+
+void writeVariablesToFile(FILE *ent_file, FILE *ext_file, struct Variable *head)
+{
+    struct Variable *temp = head;
+
+    while (temp != NULL)
+    {
+        if (strcmp(temp->type, "ent") == 0)
+        {
+            fprintf(ent_file, "%s %d\n", temp->name, temp->address);
+        }
+        else if (strcmp(temp->type, "ext") == 0)
+        {
+            fprintf(ext_file, "%s %d\n", temp->name, temp->address);
+        }
+
+        temp = temp->next;
+    }
 }
 
 void printVariableTable(struct Variable *head)

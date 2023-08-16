@@ -20,6 +20,8 @@ void addVariable(struct Variable *current_variable, struct Variable *new_variabl
 /* Print the variable table */
 void printVariableTable(struct Variable *head);
 
+void writeVariablesToFile(FILE *ent_file, FILE *ext_file, struct Variable *head);
+
 /* Free the memory allocated by the symbol table */
 void freeVariableTable(struct Variable **head);
 

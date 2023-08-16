@@ -28,7 +28,9 @@ char *convertToBase64(uint16_t binaryData)
 
 char *encodeStrIntToBinary(const char *word, int length)
 {
+    static char binary[17];            /* Assuming 16-bit binary representation */
     long num = strtol(word, NULL, 10); /* Convert decimal string to long */
+    int i = 15;
 
     /* Calculate the maximum positive value for the given length */
     long maxPositive = (1 << (length - 1)) - 1;
@@ -46,9 +48,6 @@ char *encodeStrIntToBinary(const char *word, int length)
     {
         num = (1 << length) + num; /* Convert to 2's complement */
     }
-
-    static char binary[17]; /* Assuming 16-bit binary representation */
-    int i = 15;
 
     /* Convert decimal to binary */
     while (num > 0 && i >= 0)
@@ -160,16 +159,50 @@ void encodeRegisterBonusWord(char source_operand[], char dest_operand[], char fi
     addBinary(binary_code_table_head, new_binary_code);
     printf("final line for operand: %s\n", final_line_encode);
 }
-/* int main()
+
+uint16_t binaryStringToUInt16(const char *binary)
 {
-    /* Example: Store 12 bits of binary data in a uint16_t 
-uint16_t binaryData = 0b101000001100;
+    uint16_t result = 0;
+    int i;
 
-char *base64Str = convertToBase64(binaryData);
+    for (i = 0; binary[i] != '\0'; i++)
+    {
+        result = (result << 1) + (binary[i] - '0');
+    }
 
-/* Print the Base64-encoded data 
-printf("Base64: %s\n", base64Str);
-
-return 0;
+    return result;
 }
-*/
+
+void writeEncodedProgramToFile(FILE *ob_file, struct Binary *head, int *ic, int *dc)
+{
+    struct Binary *temp = head;
+    uint16_t binaryData;
+    char *base64Str;
+
+    fprintf(ob_file, "%d %d\n", *ic, *dc);
+    /* Writing instructions first */
+    while (temp != NULL)
+    {
+        if (strcmp(temp->type, "ins") == 0)
+        {
+            binaryData = binaryStringToUInt16(temp->code);
+            base64Str = convertToBase64(binaryData);
+            fprintf(ob_file, "%s\n", base64Str);
+        }
+        temp = temp->next;
+    }
+
+    temp = head;
+
+    /* Writing directives last */
+    while (temp != NULL)
+    {
+        if (strcmp(temp->type, "dir") == 0)
+        {
+            binaryData = binaryStringToUInt16(temp->code);
+            base64Str = convertToBase64(binaryData);
+            fprintf(ob_file, "%s\n", base64Str);
+        }
+        temp = temp->next;
+    }
+}

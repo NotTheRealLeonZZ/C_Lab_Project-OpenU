@@ -20,4 +20,8 @@ void encodeSymbolBonusWord(char operand[], char final_line_encode[], char *curre
 
 void encodeRegisterBonusWord(char source_operand[], char dest_operand[], char final_line_encode[], char *current_are_encode, int source_register_num, int dest_register_num, char *source_operand_encode, char *dest_operand_encode, struct Binary *new_binary_code, struct Binary *binary_code_table_head);
 
+uint16_t binaryStringToUInt16(const char *binary);
+
+void writeEncodedProgramToFile(FILE *ob_file, struct Binary *head, int *ic, int *dc);
+
 #endif /* ENCODING_H */
