@@ -100,9 +100,10 @@ bool commaInLine(char *input)
 
 bool commaAtFirstOrLast(char *input)
 {
+    size_t length;
     char input_copy[MAX_LINE_LENGTH];
     strcpy(input_copy, input);
-    size_t length = strlen(input_copy);
+    length = strlen(input_copy);
 
     if (*input_copy == ',' || input_copy[length - 1] == ',')
         return true; /* first character is a comma */
@@ -111,9 +112,10 @@ bool commaAtFirstOrLast(char *input)
 
 bool quoteAtFirstAndLast(char *input)
 {
+    size_t length;
     char input_copy[MAX_LINE_LENGTH];
     strcpy(input_copy, input);
-    size_t length = strlen(input_copy);
+    length = strlen(input_copy);
     if ((*input_copy == '"' || *input_copy == ' ') && (input_copy[length - 1] == '"' || input_copy[length - 1] == ' '))
         return true; /* first and last characters are double quotes */
     return false;
@@ -239,11 +241,11 @@ int storeWords(char *line, char words[][MAX_LINE_LENGTH], int num_words)
 
 int tokenStrings(char *line, char words[][MAX_LINE_LENGTH], int num_words)
 {
-    num_words = 0;
+    char line_copy[MAX_LINE_LENGTH];
     char *token;
+    num_words = 0;
 
     /* Copy the input line to a temporary buffer since strtok modifies the original string */
-    char line_copy[MAX_LINE_LENGTH];
     strncpy(line_copy, line, sizeof(line_copy));
     line_copy[sizeof(line_copy) - 1] = '\0'; /* Ensure null-termination */
 
@@ -323,6 +325,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
     char current_macro_data[MAX_LINE_LENGTH];     /* Variable to hold current macro data (command line) */
     struct Macro *macro_table_head_copy;          /* A copy of the macro table head node, to manipulate without losing the original pointer */
     struct Macro *new_macro;                      /* New macro to add to the macro table */
+    struct Macro *searchedMacro;                  /* Macro that will be found */
     char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH]; /* 2 dim array to hold all the parsed words from a line*/
     int num_words = 0;                            /* Counter for words captured from line */
     int line_number = 1;                          /* Counter for lines in file */
@@ -432,7 +435,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
                 /* Reset line_copy to current line */
                 strcpy(line_copy, line);
 
-                struct Macro *searchedMacro = findMacro(macro_table_head_copy, words, num_words);
+                searchedMacro = findMacro(macro_table_head_copy, words, num_words);
 
                 if (searchedMacro != NULL)
                 {

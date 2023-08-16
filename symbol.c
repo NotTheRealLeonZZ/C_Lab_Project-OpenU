@@ -57,6 +57,8 @@ Maybe change it to find all symbols in line
 @return pointer for the found symbol or NULL */
 struct Symbol *findSymbol(struct Symbol *head, const char *name)
 {
+    struct Symbol *head_copy;
+
     /* Checking if head of macro table is NULL */
     if (head == NULL)
     {
@@ -64,7 +66,7 @@ struct Symbol *findSymbol(struct Symbol *head, const char *name)
         return NULL;
     }
 
-    struct Symbol *head_copy = head;
+    head_copy = head;
 
     while (head_copy != NULL)
     {
@@ -79,13 +81,16 @@ struct Symbol *findSymbol(struct Symbol *head, const char *name)
 
 bool wordIsSymbol(char *word)
 {
+    size_t word_length;
+    size_t i;
+
     if (word == NULL || word == '\0')
     {
         /* Check if word is empty, so its not a symbol */
         return false;
     }
 
-    size_t word_length = strlen(word);
+    word_length = strlen(word);
 
     /* Check if max symbol size exceeded */
     if (word_length > MAX_SYMBOL_NAME_LENGTH)
@@ -105,7 +110,6 @@ bool wordIsSymbol(char *word)
         return false;
     }
 
-    size_t i;
     /* Check all other words, to be numbers or letters */
     for (i = 1; i < word_length - 1; i++)
     {
@@ -123,7 +127,6 @@ bool wordIsSymbol(char *word)
     checked for first valid letter a-zA-Z */
     if (isDirectiveName(word) || isInstructionName(word))
     {
-        printf("This is not an acceptable name for symbol! %s\n", word);
         return false;
     }
 
