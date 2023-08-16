@@ -21,8 +21,8 @@ int main(int argc, char *argv[])
     char ext_filename[MAX_FILE_NAME_LENGTH];
     int passed_first = 1;
     int passed_second = 1;
-    int isEnt = 1; /* Variable to check if there is .entry command in code */
-    int isExt = 1; /* Variable to check if there is .extern command in code */
+    int is_ent = 0; /* Variable to check if there is .entry command in code */
+    int is_ext = 0; /* Variable to check if there is .extern command in code */
     FILE *ob_file;
     FILE *ent_file;
     FILE *ext_file;
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     preAssemble(as_filename, am_filename);
 
     /* First pass - Create tables */
-    firstPass(am_filename, symbol_table, extern_table, &passed_first);
+    firstPass(am_filename, symbol_table, extern_table, &passed_first, &is_ent, &is_ext);
     if (passed_first)
     {
         /* All lines has correct syntax,
@@ -79,23 +79,30 @@ int main(int argc, char *argv[])
             secondPass(am_filename, symbol_table, extern_table, binary_code_table, variable_table, &passed_second, &ic, &dc);
             if (passed_second)
             {
+
                 /* Create entry and extern files */
-                ent_file = fopen(ent_filename, "w");
-                if (ent_file == NULL)
+                if (is_ent)
                 {
-                    fprintf(stderr, "Error opening the assembly file.\n");
+                    ent_file = fopen(ent_filename, "w");
+                    if (ent_file == NULL)
+                    {
+                        fprintf(stderr, "Error opening the assembly file.\n");
+                    }
+                    writeEntVariablesToFile(ent_file, variable_table);
+                    fclose(ent_file);
                 }
 
-                ext_file = fopen(ext_filename, "w");
-                if (ext_file == NULL)
+                if (is_ext)
                 {
-                    fprintf(stderr, "Error opening the assembly file.\n");
+                    ext_file = fopen(ext_filename, "w");
+                    if (ext_file == NULL)
+                    {
+                        fprintf(stderr, "Error opening the assembly file.\n");
+                    }
+                    writeExtVariablesToFile(ext_file, variable_table);
+
+                    fclose(ext_file);
                 }
-                writeVariablesToFile(ent_file, ext_file, variable_table);
-
-                fclose(ent_file);
-                fclose(ext_file);
-
                 /* Create object file */
                 ob_file = fopen(ob_filename, "w");
                 if (ob_file == NULL)

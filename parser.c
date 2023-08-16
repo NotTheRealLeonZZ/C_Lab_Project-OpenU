@@ -490,7 +490,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
     return true;
 }
 
-void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_first)
+void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_first, int *is_ent, int *is_ext)
 {
     char line[MAX_LINE_LENGTH];                       /* Variable to hold the current line */
     char line_copy[MAX_LINE_LENGTH];                  /* A copy of the line, to manipulate without losing the original line */
@@ -587,7 +587,10 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
                                     strcpy(current_extern_name, words[1]);
                                     new_extern = createExtern(current_extern_name);
                                     addExtern(extern_table_head_copy, new_extern);
+                                    *is_ext = 1;
                                 }
+                                else if (strcmp(words[0], ".entry") == 0)
+                                    *is_ent = 1;
                             }
                             else
                             {
@@ -653,7 +656,10 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
                             strcpy(current_extern_name, words[1]);
                             new_extern = createExtern(current_extern_name);
                             addExtern(extern_table_head_copy, new_extern);
+                            *is_ext = 1;
                         }
+                        else if (strcmp(words[0], ".entry") == 0)
+                            *is_ent = 1;
                     }
                     else
                     {

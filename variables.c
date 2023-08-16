@@ -41,7 +41,7 @@ void addVariable(struct Variable *current_variable, struct Variable *new_variabl
     current_variable->next = new_variable;
 }
 
-void writeVariablesToFile(FILE *ent_file, FILE *ext_file, struct Variable *head)
+void writeEntVariablesToFile(FILE *ent_file, struct Variable *head)
 {
     struct Variable *temp = head;
 
@@ -51,7 +51,17 @@ void writeVariablesToFile(FILE *ent_file, FILE *ext_file, struct Variable *head)
         {
             fprintf(ent_file, "%s %d\n", temp->name, temp->address);
         }
-        else if (strcmp(temp->type, "ext") == 0)
+        temp = temp->next;
+    }
+}
+
+void writeExtVariablesToFile(FILE *ext_file, struct Variable *head)
+{
+    struct Variable *temp = head;
+
+    while (temp != NULL)
+    {
+        if (strcmp(temp->type, "ext") == 0)
         {
             fprintf(ext_file, "%s %d\n", temp->name, temp->address);
         }
