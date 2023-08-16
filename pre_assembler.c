@@ -17,8 +17,12 @@
 void preAssemble(const char *input_file, char *output_file)
 {
     bool parsedMacros = true;
+    FILE *am_file;
+    FILE *assembly_file;
+    struct Macro *macro_table;
+
     /* Openes the input file for reading and checks for errors when opening the file */
-    FILE *assembly_file = fopen(input_file, "r");
+    assembly_file = fopen(input_file, "r");
     if (assembly_file == NULL)
     {
         fprintf(stderr, "Error opening the assembly file.\n");
@@ -26,7 +30,7 @@ void preAssemble(const char *input_file, char *output_file)
     }
 
     /* Openes the am output file for writing and checks for errors when opening the file */
-    FILE *am_file = fopen(output_file, "w");
+    am_file = fopen(output_file, "w");
     if (am_file == NULL)
     {
         fprintf(stderr, "Error opening the assembly file.\n");
@@ -34,7 +38,7 @@ void preAssemble(const char *input_file, char *output_file)
     }
 
     /* Creates the macro table */
-    struct Macro *macro_table = createMacro("Macro_table", "Starting of macro table");
+    macro_table = createMacro("Macro_table", "Starting of macro table");
 
     /* Parsing the original file to find all the macros and build a macro table.
     While parsing, if a macro is detected and found on macro table, it will replace it

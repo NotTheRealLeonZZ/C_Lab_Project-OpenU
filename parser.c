@@ -100,9 +100,10 @@ bool commaInLine(char *input)
 
 bool commaAtFirstOrLast(char *input)
 {
+    size_t length;
     char input_copy[MAX_LINE_LENGTH];
     strcpy(input_copy, input);
-    size_t length = strlen(input_copy);
+    length = strlen(input_copy);
 
     if (*input_copy == ',' || input_copy[length - 1] == ',')
         return true; /* first character is a comma */
@@ -111,9 +112,10 @@ bool commaAtFirstOrLast(char *input)
 
 bool quoteAtFirstAndLast(char *input)
 {
+    size_t length;
     char input_copy[MAX_LINE_LENGTH];
     strcpy(input_copy, input);
-    size_t length = strlen(input_copy);
+    length = strlen(input_copy);
     if ((*input_copy == '"' || *input_copy == ' ') && (input_copy[length - 1] == '"' || input_copy[length - 1] == ' '))
         return true; /* first and last characters are double quotes */
     return false;
@@ -239,11 +241,11 @@ int storeWords(char *line, char words[][MAX_LINE_LENGTH], int num_words)
 
 int tokenStrings(char *line, char words[][MAX_LINE_LENGTH], int num_words)
 {
-    num_words = 0;
+    char line_copy[MAX_LINE_LENGTH];
     char *token;
+    num_words = 0;
 
     /* Copy the input line to a temporary buffer since strtok modifies the original string */
-    char line_copy[MAX_LINE_LENGTH];
     strncpy(line_copy, line, sizeof(line_copy));
     line_copy[sizeof(line_copy) - 1] = '\0'; /* Ensure null-termination */
 
@@ -323,6 +325,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
     char current_macro_data[MAX_LINE_LENGTH];     /* Variable to hold current macro data (command line) */
     struct Macro *macro_table_head_copy;          /* A copy of the macro table head node, to manipulate without losing the original pointer */
     struct Macro *new_macro;                      /* New macro to add to the macro table */
+    struct Macro *searchedMacro;                  /* Macro that will be found */
     char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH]; /* 2 dim array to hold all the parsed words from a line*/
     int num_words = 0;                            /* Counter for words captured from line */
     int line_number = 1;                          /* Counter for lines in file */
@@ -432,7 +435,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
                 /* Reset line_copy to current line */
                 strcpy(line_copy, line);
 
-                struct Macro *searchedMacro = findMacro(macro_table_head_copy, words, num_words);
+                searchedMacro = findMacro(macro_table_head_copy, words, num_words);
 
                 if (searchedMacro != NULL)
                 {
@@ -487,7 +490,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
     return true;
 }
 
-void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_first)
+void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_first, int *is_ent, int *is_ext)
 {
     char line[MAX_LINE_LENGTH];                       /* Variable to hold the current line */
     char line_copy[MAX_LINE_LENGTH];                  /* A copy of the line, to manipulate without losing the original line */
@@ -584,7 +587,10 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
                                     strcpy(current_extern_name, words[1]);
                                     new_extern = createExtern(current_extern_name);
                                     addExtern(extern_table_head_copy, new_extern);
+                                    *is_ext = 1;
                                 }
+                                else if (strcmp(words[0], ".entry") == 0)
+                                    *is_ent = 1;
                             }
                             else
                             {
@@ -650,7 +656,10 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
                             strcpy(current_extern_name, words[1]);
                             new_extern = createExtern(current_extern_name);
                             addExtern(extern_table_head_copy, new_extern);
+                            *is_ext = 1;
                         }
+                        else if (strcmp(words[0], ".entry") == 0)
+                            *is_ent = 1;
                     }
                     else
                     {
@@ -708,27 +717,21 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
 }
 
 void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head,
-                     struct Binary *binary_code_table_head, struct Variable *variable_table_head, int *passed_second)
+                     struct Binary *binary_code_table_head, struct Variable *variable_table_head, int *passed_second, int *ic, int *dc)
 {
-    char line[MAX_LINE_LENGTH];      /* Variable to hold the current line */
-    char line_copy[MAX_LINE_LENGTH]; /* A copy of the line, to manipulate without losing the original line */
-    int line_number = 1;             /* Line number counter for error messages */
-    int memory_count = MEMORY_START; /* A counter for memory location, to address symbols */
-    /* char current_symbol_name[MAX_SYMBOL_NAME_LENGTH];  Variable to hold current symbol's name */
-    /* int current_symbol_address;                        Variable to hold current symbol's address number */
-    /* char current_symbol_type[SYMBOL_TYPE_LENGTH];      Variable to hold current symbol's type (ins or dir) */
-    struct Symbol *symbol_table_head_copy; /* A copy of the symbol table head node, to manipulate without losing the original pointer */
-    struct Symbol *new_symbol;             /* New symbol to add to the symbol table */
-    /* char current_extern_name[MAX_SYMBOL_NAME_LENGTH];  Variable to hold current extern's name */
-    struct Extern *extern_table_head_copy;      /* A copy of the extern table head node, to manipulate without losing the original pointer */
-    struct Binary *binary_code_table_head_copy; /* A copy of the binary_code table head node, to manipulate without losing the original pointer */
-    /* struct Binary *new_binary_code;                New binary_code to add to the binary_code table */
+    char line[MAX_LINE_LENGTH];                   /* Variable to hold the current line */
+    char line_copy[MAX_LINE_LENGTH];              /* A copy of the line, to manipulate without losing the original line */
+    int line_number = 1;                          /* Line number counter for error messages */
+    int memory_count = MEMORY_START;              /* A counter for memory location, to address symbols */
+    struct Symbol *symbol_table_head_copy;        /* A copy of the symbol table head node, to manipulate without losing the original pointer */
+    struct Symbol *new_symbol;                    /* New symbol to add to the symbol table */
+    struct Extern *extern_table_head_copy;        /* A copy of the extern table head node, to manipulate without losing the original pointer */
+    struct Binary *binary_code_table_head_copy;   /* A copy of the binary_code table head node, to manipulate without losing the original pointer */
     struct Variable *variable_table_head_copy;    /* A copy of the variable table head node, to manipulate without losing the original pointer */
     struct Variable *new_variable;                /* New variable to add to the variable table */
     char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH]; /* 2 dim array to hold all the parsed words from a line*/
     int num_words = 0;                            /* Counter for words captured from line */
-    int ic = 0;                                   /* Instructions counter */
-    int dc = 0;                                   /* Directives counter */
+
     int i;
 
     printf("\nStarting second pass...\n\n");
@@ -784,12 +787,12 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
             {
                 /* Calculate dc increasing */
                 if (strcmp(words[0], ".data") == 0)
-                    dc += num_words - 1;
+                    *dc += num_words - 1;
                 if (strcmp(words[0], ".string") == 0)
                 {
                     /* Modify words to hold the entire string without quotes */
                     tokenStrings(line_copy, words, num_words);
-                    dc += strlen(words[1]) + 1; /* including '\0' */
+                    *dc += strlen(words[1]) + 1; /* including '\0' */
                 }
                 /* calculation for .data and .string */
                 calculateDirectiveBinary(words, num_words, binary_code_table_head_copy, symbol_table_head_copy, variable_table_head_copy);
@@ -817,9 +820,9 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
             }
             else if (isInstructionName(words[0]))
             {
-                ic += 1;
+                *ic += 1;
                 calculateInstructionBinary(words, num_words, binary_code_table_head_copy, symbol_table_head_copy, variable_table_head_copy,
-                                           extern_table_head_copy, &line_number, passed_second, &memory_count, &ic);
+                                           extern_table_head_copy, &line_number, passed_second, &memory_count, ic);
                 memory_count += 1;
             }
         }
@@ -833,12 +836,12 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
             {
                 /* Calculate dc increasing */
                 if (strcmp(words[0], ".data") == 0)
-                    dc += num_words - 1;
+                    *dc += num_words - 1;
                 if (strcmp(words[0], ".string") == 0)
                 {
                     /* Modify words to hold the entire string without quotes */
                     tokenStrings(line_copy, words, num_words);
-                    dc += strlen(words[1]);
+                    *dc += strlen(words[1]);
                 }
                 /* calculation for .data and .string */
                 calculateDirectiveBinary(words, num_words, binary_code_table_head_copy, symbol_table_head_copy, variable_table_head_copy);
@@ -866,10 +869,10 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
             }
             else if (isInstructionName(words[0]))
             {
-                ic += 1;
+                *ic += 1;
                 memory_count += 1;
                 calculateInstructionBinary(words, num_words, binary_code_table_head_copy, symbol_table_head_copy, variable_table_head_copy,
-                                           extern_table_head_copy, &line_number, passed_second, &memory_count, &ic);
+                                           extern_table_head_copy, &line_number, passed_second, &memory_count, ic);
             }
         }
 

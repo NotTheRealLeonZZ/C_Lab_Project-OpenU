@@ -9,13 +9,25 @@
 #include "binary.h"
 #include "tables.h"
 #include "variables.h"
+#include "encoding.h"
 
 int main(int argc, char *argv[])
 {
+    /* DO IT IN A LOOP FOR ALL ARGV */
     char as_filename[MAX_FILE_NAME_LENGTH];
     char am_filename[MAX_FILE_NAME_LENGTH];
+    char ob_filename[MAX_FILE_NAME_LENGTH];
+    char ent_filename[MAX_FILE_NAME_LENGTH];
+    char ext_filename[MAX_FILE_NAME_LENGTH];
     int passed_first = 1;
     int passed_second = 1;
+    int is_ent = 0; /* Variable to check if there is .entry command in code */
+    int is_ext = 0; /* Variable to check if there is .extern command in code */
+    FILE *ob_file;
+    FILE *ent_file;
+    FILE *ext_file;
+    int ic = 0; /* Instructions counter */
+    int dc = 0; /* Directives counter */
 
     /* Create the symbol table */
     struct Symbol *symbol_table = createSymbol("Symbol_table", -1, "Symbol_type");
@@ -31,17 +43,23 @@ int main(int argc, char *argv[])
 
     /* Validate command line 
     Get the file name from the input */
-    if (argc != 2) /* CHANGE IT LATER TO FIT MY NEEDS - MAYBE CHECK IF ALL FILE NAMES HAS .AS FILE IN THIS FOLDER */
+    if (argc < 2) /* MAYBE CHECK IF ALL FILE NAMES HAS .AS FILE IN THIS FOLDER */
     {
         fprintf(stderr, "Usage: %s <filename_without_extension>\n", argv[0]);
         return 1;
     }
 
-    /* Extract the filename from the command-line argument - DO IT IN A LOOP FOR ALL ARGV */
+    /* Extract the filename from the command-line argument  */
 
     snprintf(as_filename, sizeof(as_filename), "%s.as", argv[1]);
 
     snprintf(am_filename, sizeof(am_filename), "%s.am", argv[1]);
+
+    snprintf(ob_filename, sizeof(ob_filename), "%s.ob", argv[1]);
+
+    snprintf(ent_filename, sizeof(ent_filename), "%s.ent", argv[1]);
+
+    snprintf(ext_filename, sizeof(ext_filename), "%s.ext", argv[1]);
 
     printf("as file name: %s\tam file name: %s\n", as_filename, am_filename);
 
@@ -49,7 +67,7 @@ int main(int argc, char *argv[])
     preAssemble(as_filename, am_filename);
 
     /* First pass - Create tables */
-    firstPass(am_filename, symbol_table, extern_table, &passed_first);
+    firstPass(am_filename, symbol_table, extern_table, &passed_first, &is_ent, &is_ext);
     if (passed_first)
     {
         /* All lines has correct syntax,
@@ -58,9 +76,43 @@ int main(int argc, char *argv[])
         /* Check that extern and symbol(entry) are not the same */
         if (tablesAreDifferent(symbol_table, extern_table))
         {
-            secondPass(am_filename, symbol_table, extern_table, binary_code_table, variable_table, &passed_second);
+            secondPass(am_filename, symbol_table, extern_table, binary_code_table, variable_table, &passed_second, &ic, &dc);
             if (passed_second)
             {
+
+                /* Create entry and extern files */
+                if (is_ent)
+                {
+                    ent_file = fopen(ent_filename, "w");
+                    if (ent_file == NULL)
+                    {
+                        fprintf(stderr, "Error opening the assembly file.\n");
+                    }
+                    writeEntVariablesToFile(ent_file, variable_table);
+                    fclose(ent_file);
+                }
+
+                if (is_ext)
+                {
+                    ext_file = fopen(ext_filename, "w");
+                    if (ext_file == NULL)
+                    {
+                        fprintf(stderr, "Error opening the assembly file.\n");
+                    }
+                    writeExtVariablesToFile(ext_file, variable_table);
+
+                    fclose(ext_file);
+                }
+                /* Create object file */
+                ob_file = fopen(ob_filename, "w");
+                if (ob_file == NULL)
+                {
+                    fprintf(stderr, "Error opening the assembly file.\n");
+                }
+
+                writeEncodedProgramToFile(ob_file, binary_code_table, &ic, &dc);
+                fclose(ob_file);
+
                 printSymbolTable(symbol_table);
                 printExternTable(extern_table);
                 printBinaryTable(binary_code_table);
