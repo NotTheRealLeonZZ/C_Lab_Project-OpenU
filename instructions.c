@@ -256,7 +256,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
             combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
             new_binary_code = createBinary(final_line_encode, "ins");
             addBinary(binary_code_table_head, new_binary_code);
-            printf("final line for instruction: %s\n", final_line_encode);
 
             /* Calculating 1 extra words because of source and destination addressing both registers */
 
@@ -284,7 +283,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
                 addBinary(binary_code_table_head, new_binary_code);
-                printf("final line for instruction: %s\n", final_line_encode);
 
                 /* Calculating 2 extra words because of source and destination addressing */
 
@@ -304,7 +302,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
                 addBinary(binary_code_table_head, new_binary_code);
-                printf("final line for instruction: %s\n", final_line_encode);
 
                 /* Calculating 2 extra words because of source and destination addressing */
 
@@ -326,7 +323,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
                 addBinary(binary_code_table_head, new_binary_code);
-                printf("final line for instruction: %s\n", final_line_encode);
 
                 /* Calculating 2 extra words because of source and destination addressing */
 
@@ -349,7 +345,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
                 addBinary(binary_code_table_head, new_binary_code);
-                printf("final line for instruction: %s\n", final_line_encode);
 
                 /* Calculating 2 extra words because of source and destination addressing */
 
@@ -382,7 +377,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
                 addBinary(binary_code_table_head, new_binary_code);
-                printf("final line for instruction: %s\n", final_line_encode);
 
                 /* Calculating 2 extra words because of source and destination addressing */
 
@@ -401,7 +395,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
                 addBinary(binary_code_table_head, new_binary_code);
-                printf("final line for instruction: %s\n", final_line_encode);
 
                 /* Calculating 2 extra words because of source and destination addressing */
 
@@ -426,7 +419,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
                 addBinary(binary_code_table_head, new_binary_code);
-                printf("final line for instruction: %s\n", final_line_encode);
 
                 /* Calculating 2 extra words because of source and destination addressing */
 
@@ -462,7 +454,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
                 addBinary(binary_code_table_head, new_binary_code);
-                printf("final line for instruction: %s\n", final_line_encode);
 
                 /* Calculating 2 extra words because of source and destination addressing */
 
@@ -481,7 +472,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
                 addBinary(binary_code_table_head, new_binary_code);
-                printf("final line for instruction: %s\n", final_line_encode);
 
                 /* Source word */
                 strcpy(operand_source, words[1]);
@@ -501,7 +491,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
                 addBinary(binary_code_table_head, new_binary_code);
-                printf("final line for instruction: %s\n", final_line_encode);
 
                 /* Calculating 2 extra words because of source and destination addressing */
 
@@ -526,7 +515,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
                 addBinary(binary_code_table_head, new_binary_code);
-                printf("final line for instruction: %s\n", final_line_encode);
 
                 /* Calculating 2 extra words because of source and destination addressing */
 
@@ -565,7 +553,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
                 addBinary(binary_code_table_head, new_binary_code);
-                printf("final line for instruction: %s\n", final_line_encode);
 
                 /* Calculating 2 extra words because of source and destination addressing */
 
@@ -584,7 +571,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
                 addBinary(binary_code_table_head, new_binary_code);
-                printf("final line for instruction: %s\n", final_line_encode);
 
                 /* Calculating 2 extra words because of source and destination addressing */
 
@@ -604,7 +590,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
                 addBinary(binary_code_table_head, new_binary_code);
-                printf("final line for instruction: %s\n", final_line_encode);
 
                 /* Calculating 2 extra words because of source and destination addressing */
 
@@ -628,7 +613,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
                 addBinary(binary_code_table_head, new_binary_code);
-                printf("final line for instruction: %s\n", final_line_encode);
 
                 /* Calculating 2 extra words because of source and destination addressing */
 
@@ -671,7 +655,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
             combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
             new_binary_code = createBinary(final_line_encode, "ins");
             addBinary(binary_code_table_head, new_binary_code);
-            printf("final line for instruction: %s\n", final_line_encode);
 
             /* Calculating extra word because of destination addressing */
             strcpy(operand_destination, words[1]);
@@ -686,7 +669,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
             combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
             new_binary_code = createBinary(final_line_encode, "ins");
             addBinary(binary_code_table_head, new_binary_code);
-            printf("final line for instruction: %s\n", final_line_encode);
 
             /* Calculating extra word because of destination addressing */
 
@@ -704,7 +686,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
             combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
             new_binary_code = createBinary(final_line_encode, "ins");
             addBinary(binary_code_table_head, new_binary_code);
-            printf("final line for instruction: %s\n", final_line_encode);
 
             /* Calculating extra word because of destination addressing */
 
@@ -725,7 +706,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
             combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
             new_binary_code = createBinary(final_line_encode, "ins");
             addBinary(binary_code_table_head, new_binary_code);
-            printf("final line for instruction: %s\n", final_line_encode);
 
             /* Calculating extra word because of destination addressing */
 
@@ -750,7 +730,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
         combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
         new_binary_code = createBinary(final_line_encode, "ins");
         addBinary(binary_code_table_head, new_binary_code);
-        printf("final line for instruction: %s\n", final_line_encode);
     }
 
     /* ADD ALL THE FREE THAT NEEDED */

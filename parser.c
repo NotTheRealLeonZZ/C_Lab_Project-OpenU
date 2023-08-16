@@ -510,7 +510,7 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
 
     while (fgets(line, MAX_LINE_LENGTH, am_file) != NULL)
     {
-
+        printf("Current line memory: %d\n", memory_count);
         /* Reset pointer to copy */
         symbol_table_head_copy = symbol_table_head;
 
@@ -701,6 +701,7 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
             printf("%s -> ", words[i]);
         }
         printf("\n");
+        printf("===================\n");
 
         /* Reset words array */
         memset(words, '\0', sizeof(words));
@@ -713,7 +714,7 @@ void parseFileHandleSymbols(FILE *am_file, struct Symbol *symbol_table_head, str
     {
         *passed_first = 0;
     }
-    printf("Total memory allocated: %d\n", memory_count);
+    printf("Total memory allocated first pass: %d\n", memory_count);
 }
 
 void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head,
@@ -738,6 +739,7 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
 
     while (fgets(line, MAX_LINE_LENGTH, am_file) != NULL)
     {
+        printf("Current line memory: %d\n", memory_count);
         /* Reset pointer to copy */
         symbol_table_head_copy = symbol_table_head;
 
@@ -814,8 +816,19 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
 
                 if (strcmp(words[0], ".extern") != 0 && strcmp(words[0], ".entry") != 0)
                 {
-                    memory_count = promoteMemoryDirective(memory_count, line_copy, num_words, words[0]);
-                    memory_count += 1;
+                    if (strcmp(words[0], ".string") == 0)
+                    {
+                        /* remove .string from start of line_copy */
+                        removeSubString(line_copy, words[0]);
+                        cleanLeadingSpaces(line_copy);
+                        memory_count = promoteMemoryDirective(memory_count, line_copy, num_words, words[0]);
+                        memory_count += 1;
+                    }
+                    else
+                    {
+                        memory_count = promoteMemoryDirective(memory_count, line_copy, num_words, words[0]);
+                        memory_count += 1;
+                    }
                 }
             }
             else if (isInstructionName(words[0]))
@@ -889,5 +902,6 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
 
         line_number += 1;
     }
-    printf("Total memory allocated: %d\n", memory_count);
+    memory_count -= 1; /* Fix last line count */
+    printf("Total memory allocated second pass: %d\n", memory_count);
 }
