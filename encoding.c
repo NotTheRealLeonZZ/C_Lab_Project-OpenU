@@ -1,7 +1,6 @@
 /* Example */
 
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include "globals.h"
@@ -10,6 +9,8 @@
 #include "binary.h"
 #include "symbol.h"
 #include "registers.h"
+
+typedef unsigned short uint16_t;
 
 const char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
