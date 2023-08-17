@@ -18,7 +18,7 @@ const struct Register registersArray[NUM_OF_REGISTERS] = {
 
 };
 
-/* Function to check if a given name is a macro name */
+/* Check if a given string is a valid register name. */
 bool isRegisterName(char *received_name)
 {
     int i;
@@ -32,6 +32,7 @@ bool isRegisterName(char *received_name)
     return false;
 }
 
+/* Get the register number corresponding to a register name. */
 int getRegisterNum(char register_name[])
 {
     if (strncmp(register_name, "@r", 2) == 0)
