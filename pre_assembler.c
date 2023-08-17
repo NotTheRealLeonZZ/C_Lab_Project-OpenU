@@ -1,9 +1,10 @@
 #include <stdio.h>
-#include <stdbool.h>
+
 #include <string.h>
 #include "pre_assembler.h"
 #include "parser.h"
 #include "macro.h"
+#include "globals.h"
 
 /* 
 

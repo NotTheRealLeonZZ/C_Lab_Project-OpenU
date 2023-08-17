@@ -1,9 +1,9 @@
 #ifndef TABLES_H
 #define TABLES_H
 
-#include <stdbool.h>
 #include "symbol.h"
 #include "extern.h"
+#include "globals.h"
 
 bool tablesAreDifferent(struct Symbol *symbol_table, struct Extern *extern_table);
 

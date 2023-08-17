@@ -1,4 +1,4 @@
-#include <stdbool.h>
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,15 +64,16 @@ bool isInstructionName(char *received_name)
 /* This method is for first pass, where my symbol table is not yet full */
 bool validateOneOperandDest(char *operand, int index, int line_number)
 {
-
+    bool isSymbol;
+    bool isRegister;
     bool isInt = isIntegerInRange(operand, INT_DIRECTIVE_MIN_RANGE, INT_DIRECTIVE_MAX_RANGE);
 
     size_t operand_length = strlen(operand);
     operand[operand_length] = ':';
-    bool isSymbol = wordIsSymbol(operand);
+    isSymbol = wordIsSymbol(operand);
     operand[operand_length] = '\0';
 
-    bool isRegister = isRegisterName(operand);
+    isRegister = isRegisterName(operand);
 
     if (isInt && instructionsArray[index].destination_addressing_method[0] != 0)
         return true;
@@ -87,15 +88,16 @@ bool validateOneOperandDest(char *operand, int index, int line_number)
 /* This method is for first pass, where my symbol table is not yet full */
 bool validateOneOperandSource(char *operand, int index, int line_number)
 {
-
+    bool isSymbol;
+    bool isRegister;
     bool isInt = isIntegerInRange(operand, INT_DIRECTIVE_MIN_RANGE, INT_DIRECTIVE_MAX_RANGE);
 
     size_t operand_length = strlen(operand);
     operand[operand_length] = ':';
-    bool isSymbol = wordIsSymbol(operand);
+    isSymbol = wordIsSymbol(operand);
     operand[operand_length] = '\0';
 
-    bool isRegister = isRegisterName(operand);
+    isRegister = isRegisterName(operand);
 
     if (isInt && instructionsArray[index].source_addressing_method[0] != 0)
         return true;

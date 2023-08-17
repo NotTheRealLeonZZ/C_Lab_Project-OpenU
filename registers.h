@@ -1,7 +1,6 @@
 #ifndef REGISTERS_H
 #define REGISTERS_H
 
-#include <stdbool.h>
 #include "globals.h"
 
 struct Register

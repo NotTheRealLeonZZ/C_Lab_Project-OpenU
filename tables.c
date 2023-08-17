@@ -1,8 +1,9 @@
 #include <stdio.h>
-#include <stdbool.h>
+
 #include <string.h>
 #include "symbol.h"
 #include "extern.h"
+#include "globals.h"
 
 bool tablesAreDifferent(struct Symbol *symbol_table, struct Extern *extern_table)
 {

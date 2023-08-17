@@ -1,7 +1,6 @@
 #ifndef MACRO_H
 #define MACRO_H
 
-#include <stdbool.h>
 #include "globals.h"
 
 /* Structure to represent a macro */

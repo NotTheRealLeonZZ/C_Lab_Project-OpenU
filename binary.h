@@ -1,7 +1,6 @@
 #ifndef BINARY_H
 #define BINARY_H
 
-#include <stdbool.h>
 #include "globals.h"
 
 /* Structure to represent a symbol */

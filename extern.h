@@ -1,8 +1,6 @@
 #ifndef EXTERN_H
 #define EXTERN_H
 
-#include <stdbool.h>
-
 /* Structure to represent a symbol */
 struct Extern
 {

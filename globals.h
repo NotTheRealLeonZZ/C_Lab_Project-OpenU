@@ -1,6 +1,12 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+typedef enum
+{
+    false = 0,
+    true = 1
+} bool;
+
 #define MAX_PROGRAM_SIZE 923
 #define MAX_MACRO_NAME 76
 
