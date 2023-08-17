@@ -1,7 +1,7 @@
 #ifndef SYMBOL_H
 #define SYMBOL_H
 
-#include <stdbool.h>
+#include "globals.h"
 
 /* Structure to represent a symbol */
 struct Symbol

@@ -1,7 +1,6 @@
 #ifndef INSTRUCTIONS_H
 #define INSTRUCTIONS_H
 
-#include <stdbool.h>
 #include "globals.h"
 #include "symbol.h"
 #include "variables.h"

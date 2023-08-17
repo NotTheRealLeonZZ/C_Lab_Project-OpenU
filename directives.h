@@ -1,7 +1,6 @@
 #ifndef DIRECTIVES_H
 #define DIRECTIVES_H
 
-#include <stdbool.h>
 #include "globals.h"
 #include "symbol.h"
 #include "binary.h"
