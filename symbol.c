@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <ctype.h>
 #include "symbol.h"
 #include "registers.h"
@@ -10,7 +9,7 @@
 #include "my_string.h"
 #include "globals.h"
 
-/* Create a new Symbol structure */
+/* Create a new symbol structure. */
 struct Symbol *createSymbol(const char *symbol_name, const int symbol_address, const char *symbol_type)
 {
 
@@ -29,12 +28,12 @@ struct Symbol *createSymbol(const char *symbol_name, const int symbol_address, c
     return new_symbol;
 }
 
-/* Add a symbol at the end of the node list */
+/* Add a symbol to the end of the symbol table. */
 void addSymbol(struct Symbol *current_symbol, struct Symbol *new_symbol)
 {
     /* Assumming head is already exists */
 
-    /* Checking if current symbol is NULL */
+    /* Checking if current symbol is NULL (memory error) */
     if (current_symbol == NULL)
     {
         fprintf(stderr, "The given current node cannot be NULL.\n");
@@ -50,11 +49,7 @@ void addSymbol(struct Symbol *current_symbol, struct Symbol *new_symbol)
     current_symbol->next = new_symbol;
 }
 
-/* Function to find a symbol by name.
-Maybe change it to find all symbols in line
-@param head - the first pointer to the symbol table
-@param name - the symbol's name you looking for
-@return pointer for the found symbol or NULL */
+/* Find a symbol in the symbol table by its name. */
 struct Symbol *findSymbol(struct Symbol *head, const char *name)
 {
     struct Symbol *head_copy;
@@ -79,6 +74,7 @@ struct Symbol *findSymbol(struct Symbol *head, const char *name)
     return NULL;
 }
 
+/* Check if a given word can be a symbol. */
 bool wordIsSymbol(char *word)
 {
     size_t word_length;
@@ -134,6 +130,7 @@ bool wordIsSymbol(char *word)
     return true;
 }
 
+/* Remove a symbol from a line. */
 void removeSymbolFromLine(char *line, char *symbol_name)
 {
     char *substr_pos = strstr(line, symbol_name);
@@ -150,6 +147,7 @@ void removeSymbolFromLine(char *line, char *symbol_name)
     }
 }
 
+/* Print a warning message if a symbol is of .entry or .extern. */
 void warnSymbolIfNecessary(char *word, int line_number)
 {
     if (strcmp(word, ".extern") == 0 || strcmp(word, ".entry") == 0)
@@ -158,7 +156,7 @@ void warnSymbolIfNecessary(char *word, int line_number)
     }
 }
 
-/* Fix address of symbols with complete IC */
+/* Update the address of a symbol to reflect its final address. */
 void fixSymbolAddress(struct Symbol *symbol_table_head_copy, int ic)
 {
     struct Symbol *temp = symbol_table_head_copy;
@@ -187,7 +185,7 @@ void printSymbolTable(struct Symbol *head)
     printf("=================\n");
 }
 
-/* Free the memory allocated by the symbol table */
+/* Free the memory allocated by the symbol table. */
 void freeSymbolTable(struct Symbol **head)
 {
     struct Symbol *current = *head;

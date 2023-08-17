@@ -12,10 +12,10 @@
 
 typedef unsigned short uint16_t;
 
-const char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
+/* Convert a 12-bit binary number to a Base64 encoded string. */
 char *convertToBase64(uint16_t binaryData)
 {
+    const char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     static char base64String[2];
     binaryData &= 0x0FFF; /* Ensure we only consider the lower 12 bits */
 
@@ -27,10 +27,11 @@ char *convertToBase64(uint16_t binaryData)
     return base64String;
 }
 
+/* Encode a string representation of an integer to a specified length binary representation. */
 char *encodeStrIntToBinary(const char *word, int length)
 {
-    static char binary[17];            /* Assuming 16-bit binary representation */
-    long num = strtol(word, NULL, 10); /* Convert decimal string to long */
+    static char binary[BINARY_REPRESENTATION_SIZE]; /* Assuming 16-bit binary representation */
+    long num = strtol(word, NULL, 10);              /* Convert decimal string to long */
     int i = 15;
 
     /* Calculate the maximum positive value for the given length */
@@ -67,6 +68,7 @@ char *encodeStrIntToBinary(const char *word, int length)
     return my_strdup(&binary[16 - length]);
 }
 
+/* Encode a character to its 12-bit binary representation. */
 char *encodeCharToBinary(char c)
 {
     int asciiValue = (int)c;
@@ -88,6 +90,7 @@ char *encodeCharToBinary(char c)
     return binary;
 }
 
+/* Encode an integer to its specified length binary representation. */
 char *encodeIntToBinary(int original_num, int length)
 {
     char *binary = (char *)malloc(length + 1); /* +1 for the null terminator */
@@ -114,6 +117,7 @@ char *encodeIntToBinary(int original_num, int length)
     return binary;
 }
 
+/* Encode a bonus word for an extern operand. */
 void encodeExternBonusWord(char operand[], char final_line_encode[], char *current_are_encode, char *operand_encode, struct Binary *new_binary_code, struct Binary *binary_code_table_head)
 {
 
@@ -125,6 +129,7 @@ void encodeExternBonusWord(char operand[], char final_line_encode[], char *curre
     addBinary(binary_code_table_head, new_binary_code);
 }
 
+/* Encode a bonus word for an integer operand. */
 void encodeIntBonusWord(char operand[], char final_line_encode[], char *current_are_encode, char *operand_encode, struct Binary *new_binary_code, struct Binary *binary_code_table_head)
 {
 
@@ -135,6 +140,7 @@ void encodeIntBonusWord(char operand[], char final_line_encode[], char *current_
     addBinary(binary_code_table_head, new_binary_code);
 }
 
+/* Encode a bonus word for a symbol operand. */
 void encodeSymbolBonusWord(char operand[], char final_line_encode[], char *current_are_encode, int symbol_address, struct Symbol *new_symbol, char *operand_encode, struct Binary *new_binary_code, struct Binary *binary_code_table_head)
 {
     final_line_encode[0] = '\0';
@@ -146,6 +152,7 @@ void encodeSymbolBonusWord(char operand[], char final_line_encode[], char *curre
     addBinary(binary_code_table_head, new_binary_code);
 }
 
+/* Encode a bonus word for a register operand. */
 void encodeRegisterBonusWord(char source_operand[], char dest_operand[], char final_line_encode[], char *current_are_encode, int source_register_num, int dest_register_num, char *source_operand_encode, char *dest_operand_encode, struct Binary *new_binary_code, struct Binary *binary_code_table_head)
 {
     final_line_encode[0] = '\0';
@@ -157,6 +164,7 @@ void encodeRegisterBonusWord(char source_operand[], char dest_operand[], char fi
     addBinary(binary_code_table_head, new_binary_code);
 }
 
+/* Convert a binary string to a uint16_t value. */
 uint16_t binaryStringToUInt16(const char *binary)
 {
     uint16_t result = 0;
@@ -170,6 +178,7 @@ uint16_t binaryStringToUInt16(const char *binary)
     return result;
 }
 
+/* Write the encoded program to an output file. */
 void writeEncodedProgramToFile(FILE *ob_file, struct Binary *head, int *ic, int *dc)
 {
     struct Binary *temp = head;
@@ -177,6 +186,7 @@ void writeEncodedProgramToFile(FILE *ob_file, struct Binary *head, int *ic, int 
     char *base64Str;
 
     fprintf(ob_file, "%d %d\n", *ic, *dc);
+
     /* Writing instructions first */
     while (temp != NULL)
     {
@@ -192,6 +202,7 @@ void writeEncodedProgramToFile(FILE *ob_file, struct Binary *head, int *ic, int 
     temp = head;
 
     /* Writing directives last */
+
     while (temp != NULL)
     {
         if (strcmp(temp->type, "dir") == 0)

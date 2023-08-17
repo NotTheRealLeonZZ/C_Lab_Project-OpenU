@@ -13,7 +13,12 @@ and build binary table, create variables table to output to files later.
 5) Create .ob file that encode the binary table to base64, instruction first and then directives.
 */
 
-/* The actual assembler, running on each agrument the user entered */
+/*
+The actual assembler, running on each agrument the user entered 
+
+@param *argv[] User's input array from command line
+@param index Current input
+*/
 void runAssembler(char *argv[], int index);
 
 #endif /* ASSEMBLER_H */

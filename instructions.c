@@ -34,6 +34,7 @@ const struct Instruction instructionsArray[NUM_OF_INSTRUCTIONS] = {
 
 };
 
+/* Get the decimal code of an instruction by its name. */
 int get_decimal_code(char *received_name)
 {
     int i;
@@ -47,7 +48,7 @@ int get_decimal_code(char *received_name)
     return -1;
 }
 
-/* Function to check if a given name is a macro name */
+/* Check if a given name corresponds to an instruction name. */
 bool isInstructionName(char *received_name)
 {
     int i;
@@ -61,7 +62,7 @@ bool isInstructionName(char *received_name)
     return false;
 }
 
-/* This method is for first pass, where my symbol table is not yet full */
+/* Validate the destination operand one at a time. */
 bool validateOneOperandDest(char *operand, int index, int line_number)
 {
     bool isSymbol;
@@ -85,7 +86,7 @@ bool validateOneOperandDest(char *operand, int index, int line_number)
     return false;
 }
 
-/* This method is for first pass, where my symbol table is not yet full */
+/* Validate the source operand one at a time. */
 bool validateOneOperandSource(char *operand, int index, int line_number)
 {
     bool isSymbol;
@@ -108,6 +109,7 @@ bool validateOneOperandSource(char *operand, int index, int line_number)
     return false;
 }
 
+/* Check for comma problems in the instruction line. */
 bool instructionCommaProblem(char *line, int line_number, int num_words, char *instruction_full_name, int index)
 {
     char line_copy[MAX_LINE_LENGTH];
@@ -146,6 +148,7 @@ bool instructionCommaProblem(char *line, int line_number, int num_words, char *i
     return true;
 }
 
+/* Check for operand problems in the instruction line. */
 bool instructionOperandsProblem(char words[][MAX_LINE_LENGTH], int num_words, char *line, int line_number, char *instruction_full_name, int index)
 {
 
@@ -183,6 +186,7 @@ bool instructionOperandsProblem(char words[][MAX_LINE_LENGTH], int num_words, ch
     return true;
 }
 
+/* Validate instruction syntax. */
 bool validInstruction(char words[][MAX_LINE_LENGTH], int num_words, char *line, int line_number)
 {
     char *instruction_full_name = words[0];
@@ -209,30 +213,31 @@ bool validInstruction(char words[][MAX_LINE_LENGTH], int num_words, char *line, 
     return false;
 }
 
+/* Calculate the binary representation of an instruction and add it to the binary code table. */
 void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, struct Binary *binary_code_table_head,
                                 struct Symbol *symbol_table_head, struct Variable *variable_table_head, struct Extern *extern_table_head,
                                 int *line_number, int *passed_second, int *current_memory, int *ic, int *is_ext)
 {
-    char current_are[SIZE_OF_ARE]; /* A.R.E of current line, will use for binary encode */
-    char final_line_encode[BINARY_CODE_LENGTH];
-    char *current_instruction_encode = '\0'; /* instruction code of current line, will use for binary encode */
-    char *current_are_encode = '\0';
-    char *current_source_addressing_encode = '\0';
-    char *current_dest_addressing_encode = '\0';
-    char *operand_encode = '\0';
-    char *operand_encode_2 = '\0';
-    int source_register_num = -1;
-    int dest_register_num = -1;
-    int temp_instruction_code = -1;   /* Temp variable to hold instruction code as decimal */
-    int operands_num = num_words - 1; /* Number of operands */
-    struct Binary *new_binary_code;
-    struct Symbol *new_symbol_dest;   /* New symbol to add to the symbol table */
-    struct Symbol *new_symbol_source; /* New symbol to add to the symbol table */
-    struct Variable *new_variable;
-    char operand_destination[MAX_SYMBOL_NAME_LENGTH];
-    char operand_source[MAX_SYMBOL_NAME_LENGTH];
-    int source_symbol_address = -1;
-    int dest_symbol_address = -1;
+    char current_are[SIZE_OF_ARE];                    /* A.R.E of current line, will use for binary encode */
+    char final_line_encode[BINARY_CODE_LENGTH];       /* Final string of binary */
+    char *current_instruction_encode = '\0';          /* Instruction code of current line, will use for binary encode */
+    char *current_are_encode = '\0';                  /* Encoded A.R.E */
+    char *current_source_addressing_encode = '\0';    /* Encoded source addressing */
+    char *current_dest_addressing_encode = '\0';      /* Encoded destination addressing */
+    char *operand_encode = '\0';                      /* First operand encoded */
+    char *operand_encode_2 = '\0';                    /* Second operand encoded */
+    int source_register_num = -1;                     /* Number of source register */
+    int dest_register_num = -1;                       /* Number of destination register */
+    int temp_instruction_code = -1;                   /* Temp variable to hold instruction code as decimal */
+    int operands_num = num_words - 1;                 /* Number of operands */
+    struct Binary *new_binary_code;                   /* New binary node to add to the binary table*/
+    struct Symbol *new_symbol_dest;                   /* New symbol destination to add to the symbol table */
+    struct Symbol *new_symbol_source;                 /* New symbol source to add to the symbol table */
+    struct Variable *new_variable;                    /* New variable node to add to the variable table */
+    char operand_destination[MAX_SYMBOL_NAME_LENGTH]; /* Destination operand */
+    char operand_source[MAX_SYMBOL_NAME_LENGTH];      /* Source operand */
+    int source_symbol_address = -1;                   /* Source symbol address */
+    int dest_symbol_address = -1;                     /* Destination symbol address */
 
     final_line_encode[0] = '\0';
     strcpy(current_are, ABSOLUTE_ARE);
@@ -250,8 +255,10 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
         new_symbol_dest = findSymbol(symbol_table_head, operand_destination);
 
         /* Checks source operand type */
+
         if (isRegisterName(operand_source) && isRegisterName(operand_destination))
         {
+            /* Both operands are registers, they share a memory word */
             current_are_encode = ABSOLUTE_ARE;
             current_source_addressing_encode = ADDRESSING5;
             current_dest_addressing_encode = ADDRESSING5;
@@ -298,7 +305,7 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
             }
             else if (isRegisterName(operand_destination))
             {
-                /* Source is number, destination is register */
+                /* Destination is register */
 
                 current_dest_addressing_encode = ADDRESSING5;
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
@@ -319,7 +326,7 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
             }
             else if (new_symbol_dest)
             {
-                /* Source is number, destination is known symbol */
+                /* Destination is known symbol */
 
                 current_dest_addressing_encode = ADDRESSING3;
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
@@ -339,7 +346,10 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
 
             else if (findExtern(extern_table_head, operand_destination))
             {
+                /* Destination is known extern */
+
                 *is_ext = 1;
+
                 /* Add to variable table as extern */
                 new_variable = createVariable(operand_destination, MEMORY_START + *ic, "ext");
                 addVariable(variable_table_head, new_variable);
@@ -368,7 +378,7 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
         }
         else if (isRegisterName(operand_source))
         {
-            /* Source operand is register, already checked if dest also register so can assume its not */
+            /* Source operand is register, already checked if destination also register so can assume its not */
             current_are_encode = ABSOLUTE_ARE;
             current_source_addressing_encode = ADDRESSING5;
 
@@ -394,6 +404,7 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
             }
             else if (new_symbol_dest)
             {
+                /* Dest operand is a known symbol */
                 current_dest_addressing_encode = ADDRESSING3;
                 combine4Strings(final_line_encode, current_are_encode, current_dest_addressing_encode, current_instruction_encode, current_source_addressing_encode);
                 new_binary_code = createBinary(final_line_encode, "ins");
@@ -413,7 +424,9 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
             else if (findExtern(extern_table_head, operand_destination))
             {
                 /* Dest operand is an extern symbol */
+
                 *is_ext = 1;
+
                 /* Add to variable table as extern */
                 new_variable = createVariable(operand_destination, MEMORY_START + *ic, "ext");
                 addVariable(variable_table_head, new_variable);
@@ -445,7 +458,6 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
         {
             /* Source operand is symbol */
 
-            /* Source operand is register, already checked if dest also register so can assume its not */
             current_are_encode = ABSOLUTE_ARE;
             current_source_addressing_encode = ADDRESSING3;
 
@@ -650,11 +662,13 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
     }
     else if (operands_num == 1)
     {
+        /* Just 1 operand, find its type */
         strcpy(operand_destination, words[1]);
 
         new_symbol_dest = findSymbol(symbol_table_head, operand_destination);
         if (isIntegerInRange(operand_destination, INT_INSTRUCTION_MIN_RANGE, INT_INSTRUCTION_MAX_RANGE))
         {
+            /* Operand is int */
             current_are_encode = ABSOLUTE_ARE;
             current_source_addressing_encode = ADDRESSING_EMPTY;
             current_dest_addressing_encode = ADDRESSING1;
@@ -669,6 +683,7 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
 
         else if (isRegisterName(operand_destination))
         {
+            /* Operand is register */
             current_are_encode = ABSOLUTE_ARE;
             current_source_addressing_encode = ADDRESSING_EMPTY;
             current_dest_addressing_encode = ADDRESSING5;
@@ -728,6 +743,7 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
         *current_memory += 1;
         *line_number += 1;
     }
+    /* No operands at all */
     else if (operands_num == 0)
     {
         current_are_encode = ABSOLUTE_ARE;
@@ -738,19 +754,13 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
         addBinary(binary_code_table_head, new_binary_code);
     }
 
-    /* ADD ALL THE FREE THAT NEEDED */
+    /* Free memory */
     free(current_instruction_encode);
-
-    /* free(current_are_encode); 
-    
-    free(current_source_addressing_encode);
-    
-    free(current_dest_addressing_encode);*/
     free(operand_encode);
     free(operand_encode_2);
 }
 
-/* add all strings to result to complete a binary word */
+/* Combine four strings to create a binary word. */
 void combine4Strings(char *result, const char *are, const char *dest_addressing, const char *instruction_code, const char *source_addressing)
 {
     strcat(result, source_addressing);
@@ -759,7 +769,7 @@ void combine4Strings(char *result, const char *are, const char *dest_addressing,
     strcat(result, are);
 }
 
-/* For 2 operands (2 registers) */
+/* Combine three strings to create a binary word. */
 void combine3Strings(char *result, const char *are, const char *operand_destination, const char *operand_source)
 {
     strcat(result, operand_destination);
@@ -767,7 +777,7 @@ void combine3Strings(char *result, const char *are, const char *operand_destinat
     strcat(result, are);
 }
 
-/* For 1 operand */
+/* Combine two strings to create a binary word. */
 void combine2Strings(char *result, const char *are, const char *operand)
 {
 

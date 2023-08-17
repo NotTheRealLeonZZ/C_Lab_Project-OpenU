@@ -6,17 +6,7 @@
 #include "macro.h"
 #include "globals.h"
 
-/* 
-
-    Pre assembler function.
-    The main mission here is to replace all the macros in the original input file (.as)
-    and make the file ready for the "First Assembler Pass" by outputing a new file (.am) with all the macros spread.
-    Comment lines must start with ; as first char (no spaces before)
-    Macros cannot have comments in them (MAYBE CHANGE)
-    @param input_file the .as file name
-    @param output_file the .am file name 
-
-*/
+/* Pre assembler function. */
 void preAssemble(const char *input_file, char *output_file)
 {
     bool parsedMacros = true;
@@ -43,12 +33,14 @@ void preAssemble(const char *input_file, char *output_file)
     /* Creates the macro table */
     macro_table = createMacro("Macro_table", "Starting of macro table");
 
-    /* Parsing the original file to find all the macros and build a macro table.
+    /*
+    Parsing the original file to find all the macros and build a macro table.
     While parsing, if a macro is detected and found on macro table, it will replace it
     with the macro data in the output file 
     Macros will always be decleared before the call for the macro.
     If I read a word that that isn't a macro, ill copy it to the .am file anyways,
-    On first pass I will prompt an error for it.*/
+    On first pass I will prompt an error for it if needed.
+    */
     parsedMacros = parseFileHandleMacros(assembly_file, am_file, output_file, macro_table);
 
     if (parsedMacros)

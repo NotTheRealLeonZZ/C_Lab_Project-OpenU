@@ -1,14 +1,3 @@
-/*
-
-This file is going to parse the assembly file for pre-assembler.
-Main focuse here is to find and store macros in the macro table
-And replace all the macros with the actual macro.
-After inputing all the macros, a file with .am extention will be outputed,
-Ready for assembler "First pass"
-
-
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,6 +14,7 @@ Ready for assembler "First pass"
 #include "variables.h"
 #include "registers.h"
 
+/* Remove leading spaces from a given string. */
 void cleanLeadingSpaces(char *input)
 {
     int i, j = 0;
@@ -48,6 +38,7 @@ void cleanLeadingSpaces(char *input)
     input[j] = '\0';
 }
 
+/* Remove trailing spaces from a given string. */
 void removeTrailingSpaces(char *input)
 {
     int length = strlen(input);
@@ -63,7 +54,7 @@ void removeTrailingSpaces(char *input)
     input[i + 1] = '\0';
 }
 
-/* A method to remove spaces entirely from input */
+/* Remove all spaces from a given string. */
 void cleanAllSpaces(char *input)
 {
     char *src = input;
@@ -81,7 +72,7 @@ void cleanAllSpaces(char *input)
     *dst = '\0';
 }
 
-/* A method to check for a comma in line.
+/* Check if a comma is present in a given string.
 Assuming there are no commas in macro/extern/entry and instruction with no parameters decleration  */
 bool commaInLine(char *input)
 {
@@ -99,6 +90,7 @@ bool commaInLine(char *input)
     return false; /* No problems */
 }
 
+/* Check if a comma is present at the first or last character of a string. */
 bool commaAtFirstOrLast(char *input)
 {
     size_t length;
@@ -111,6 +103,7 @@ bool commaAtFirstOrLast(char *input)
     return false;
 }
 
+/* Check if a string has double quotes at both the start and end. */
 bool quoteAtFirstAndLast(char *input)
 {
     size_t length;
@@ -122,8 +115,7 @@ bool quoteAtFirstAndLast(char *input)
     return false;
 }
 
-/* add description
-@return true if there is a comma after the first word.
+/* Check if a comma appears after the first word in a string.
 Also, modifies the line to return without the first word for later parameter validation */
 bool commaAfterFirstWord(char *line, char *first_word)
 {
@@ -146,6 +138,7 @@ bool commaAfterFirstWord(char *line, char *first_word)
     return false;
 }
 
+/* Check if there are consecutive commas in a string. */
 bool doubleComma(char *line, int line_number)
 {
     int i = 0;
@@ -166,6 +159,7 @@ bool doubleComma(char *line, int line_number)
     return false;
 }
 
+/* Count the number of commas in a string. */
 int countCommas(char *line)
 {
     int comma_count = 0;
@@ -186,6 +180,7 @@ int countCommas(char *line)
     return comma_count;
 }
 
+/* Count the number of quotes in a string. */
 int countQuotes(char *line)
 {
     int quote_count = 0;
@@ -207,14 +202,14 @@ int countQuotes(char *line)
     return quote_count;
 }
 
+/* Remove a newline character from the end of a string. */
 void removeNewLineFromEnd(char *line)
 {
 
     line[strcspn(line, "\n")] = '\0'; /* Remove new line from end of input */
 }
 
-/* comment lines starts with ; as the first char.
-else is error */
+/* Check if a line is empty or a comment line. */
 bool isEmptyOrCommentLines(char *line)
 {
     char line_copy[MAX_LINE_LENGTH];
@@ -231,6 +226,7 @@ bool isEmptyOrCommentLines(char *line)
     return false;
 }
 
+/* Tokenize a line into individual words. */
 int storeWords(char *line, char words[][MAX_LINE_LENGTH], int num_words)
 {
     char *token = strtok((char *)line, " ,");
@@ -244,6 +240,7 @@ int storeWords(char *line, char words[][MAX_LINE_LENGTH], int num_words)
     return num_words;
 }
 
+/* Tokenize a line into individual words, including handling special cases. */
 int tokenStrings(char *line, char words[][MAX_LINE_LENGTH], int num_words)
 {
     char line_copy[MAX_LINE_LENGTH];
@@ -275,6 +272,7 @@ int tokenStrings(char *line, char words[][MAX_LINE_LENGTH], int num_words)
     return num_words;
 }
 
+/* Reset the copy of a line back to its original state. */
 void resetLineCopy(char *line, char *line_copy)
 {
     strcpy(line_copy, line);
@@ -282,6 +280,7 @@ void resetLineCopy(char *line, char *line_copy)
     removeNewLineFromEnd(line_copy);
 }
 
+/* Check if a string can be converted to an integer within a specified range. */
 bool isIntegerInRange(char *param, int min_range, int max_range)
 {
     char *endptr;
@@ -293,6 +292,7 @@ bool isIntegerInRange(char *param, int min_range, int max_range)
         return false;
 }
 
+/* Check if a string contains only ASCII characters. */
 bool isAscii(char *line, int line_number)
 {
     while (*line != '\0')
@@ -307,19 +307,14 @@ bool isAscii(char *line, int line_number)
     return true;
 }
 
+/* Remove a sub-string from a given string. */
 void removeSubString(char *line, char *sub_string)
 {
     int index = strlen(sub_string);
     strcpy(line, line + index);
 }
 
-/*
-
-The main parsing function for assembly files.
-This file will take care of storing macros in macros table and replacing them in the original file
-Later on, it will also make all the parsing for the file, including validating ALL lines.
-
-*/
+/* Parse the assembly file, handling macros. */
 bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_name, struct Macro *macro_table_head)
 {
     char line[MAX_LINE_LENGTH];      /* Variable to hold the current line */
@@ -495,6 +490,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
     return true;
 }
 
+/* Perform the first pass of the assembly process. */
 void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_first, int *is_ent)
 {
     char line[MAX_LINE_LENGTH];                       /* Variable to hold the current line */
@@ -511,9 +507,9 @@ void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Exte
     struct Extern *new_extern;                        /* New extern to add to the extern table */
     char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH];     /* 2 dim array to hold all the parsed words from a line*/
     int num_words = 0;                                /* Counter for words captured from line */
-    int i;
-    int ic = 0;
-    int dc = 0;
+    int i;                                            /* Index */
+    int ic = 0;                                       /* Instruction counter */
+    int dc = 0;                                       /* Directive counter */
 
     while (fgets(line, MAX_LINE_LENGTH, am_file) != NULL)
     {
@@ -544,14 +540,14 @@ void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Exte
                     strcpy(current_symbol_name, words[0]);
 
                     /* line_copy holds the name of the symbol including the ':',
-            make a copy of the original line without the symbol */
+                    make a copy of the original line without the symbol */
 
                     removeSymbolFromLine(line, line_copy);
                     cleanLeadingSpaces(line_copy);
                     removeNewLineFromEnd(line_copy);
 
                     /* line_copy holds the data of the symbol, either a directive or instruction
-            copy it to original line */
+                    copy it to original line */
                     strcpy(line, line_copy);
 
                     /* Check for comma as first word or last character */
@@ -575,7 +571,7 @@ void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Exte
                             {
                                 warnSymbolIfNecessary(words[0], line_number);
                                 /* No need to create symbol for extern and entry.
-                            Validation is enough, later we'll deal with it */
+                                Validation is enough, later we'll deal with it */
                                 if (strcmp(words[0], ".extern") != 0 && strcmp(words[0], ".entry") != 0)
                                 {
                                     /* Valid syntax of directive, */
@@ -769,15 +765,15 @@ void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Exte
 
         line_number += 1;
     }
-    memory_count -= 1; /* fix last line */
 
-    /* memory_count -= 1;  Fix last line count */
+    memory_count -= 1; /* Fix last line */
+
     if (memory_count > MAX_PROGRAM_SIZE)
     {
         *passed_first = 0;
     }
 
-    /* fix address of symbols with complete IC */
+    /* Fix address of symbols with complete IC */
     symbol_table_head_copy = symbol_table_head;
     fixSymbolAddress(symbol_table_head_copy, ic);
 
@@ -785,6 +781,7 @@ void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Exte
     printf("First pass IC: %d, DC: %d\n", ic, dc);
 }
 
+/* Perform the second pass of the assembly process. */
 void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head,
                      struct Binary *binary_code_table_head, struct Variable *variable_table_head, int *passed_second, int *ic, int *dc, int *is_ext)
 {
@@ -864,7 +861,7 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
                     tokenStrings(line_copy, words, num_words);
                     *dc += strlen(words[1]) + 1; /* including '\0' */
                 }
-                /* calculation for .data and .string */
+                /* Calculation for .data and .string */
                 calculateDirectiveBinary(words, num_words, binary_code_table_head_copy);
 
                 if (strcmp(words[0], ".entry") == 0)
@@ -886,7 +883,7 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
                 {
                     if (strcmp(words[0], ".string") == 0)
                     {
-                        /* remove .string from start of line_copy */
+                        /* Remove .string from start of line_copy */
                         removeSubString(line_copy, words[0]);
                         cleanLeadingSpaces(line_copy);
                         memory_count = promoteMemoryDirective(memory_count, line_copy, num_words, words[0]);
@@ -911,7 +908,7 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
         {
             /* Not a symbol */
             resetLineCopy(line, line_copy);
-            /* add here from isDirective */
+
             if (isDirectiveName(words[0]))
             {
                 /* Calculate dc increasing */
@@ -923,7 +920,7 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
                     tokenStrings(line_copy, words, num_words);
                     *dc += strlen(words[1]);
                 }
-                /* calculation for .data and .string */
+                /* Calculation for .data and .string */
                 calculateDirectiveBinary(words, num_words, binary_code_table_head_copy);
 
                 if (strcmp(words[0], ".entry") == 0)
@@ -956,6 +953,7 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
             }
         }
 
+        i = 0;
         for (i = 0; i < num_words; i++)
         {
             printf("%s -> ", words[i]);

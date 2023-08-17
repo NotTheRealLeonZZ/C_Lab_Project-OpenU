@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <ctype.h>
 #include "binary.h"
 #include "my_string.h"
 #include "globals.h"
 
+/* Create a new Binary node */
 struct Binary *createBinary(const char *binary_code, const char *type)
 {
     struct Binary *new_binary_code = (struct Binary *)malloc(sizeof(struct Binary));
@@ -28,7 +28,7 @@ void addBinary(struct Binary *current_binary_code, struct Binary *new_binary_cod
 {
     /* Assumming head is already exists */
 
-    /* Checking if current binary code is NULL */
+    /* Checking if current binary code is NULL (memory error) */
     if (current_binary_code == NULL)
     {
         fprintf(stdout, "The given current node cannot be NULL.\n");
@@ -42,32 +42,6 @@ void addBinary(struct Binary *current_binary_code, struct Binary *new_binary_cod
     }
 
     current_binary_code->next = new_binary_code;
-}
-
-/* Function to find a binary code by name.
-@param head - the first pointer to the binary code table
-@param code - the binary code's code you looking for
-@return pointer for the found binary code or NULL */
-struct Binary *findBinary(struct Binary *head, const char *code)
-{
-    struct Binary *head_copy = head;
-
-    /* Checking if head of binary code table is NULL */
-    if (head == NULL)
-    {
-        fprintf(stdout, "Cannot find binary code, empty table.");
-        return NULL;
-    }
-
-    while (head_copy != NULL)
-    {
-        if (strcmp(head_copy->code, code) == 0)
-        {
-            return head_copy;
-        }
-        head_copy = head_copy->next;
-    }
-    return NULL;
 }
 
 /* Print the binary code table */

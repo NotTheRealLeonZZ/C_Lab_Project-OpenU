@@ -1,28 +1,17 @@
-    ;test
 .entry LIST
 .extern W
 MAIN: add @r3, LIST
 LOOP: prn 48
-mcro m1
- inc @r6
- mov @r3, W
-endmcro
-mcro m2
-stop
-endmcro
-mcro m3
-stop
-endmcro
 STR: .string "abcd"
 LIST: .data 6, -9
 lea STR, @r6
 inc @r6
 mov @r3, W
 sub @r1, @r4
-m2
+stop
 bne END
 cmp val1, -6
-m3
+stop
 bne END
 dec K
 .entry MAIN
@@ -30,7 +19,9 @@ sub LOOP , @r5
 END: stop
 .data -100
 .entry K
-m1
+ inc @r6
+ mov @r3, W
 K: .data 31
 .extern val1
-m1
+ inc @r6
+ mov @r3, W
