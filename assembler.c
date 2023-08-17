@@ -11,22 +11,9 @@
 #include "variables.h"
 #include "encoding.h"
 
-/*
-Main Assmebler file.
-Here I receive arguments from the user in terminal with the name of the .as files (without the .as extention)
-For each file:
-1) Pre-assemble and spread macros
-2) First pass - Create symbol table, calculate memory + IC + DC, create extern table, check for syntax error and max file memory size.
-3) Second pass - Validate all operands, validate .exntry and .extern, re-calculate memory + IC + DC, encode each line to binary
-and build binary table, create variables table to output to files later.
-4) If both passes pass, I check if need to create .ent and .ext files and create them from variable table
-5) Create .ob file that encode the binary table to base64, instruction first and then directives.
- */
-
 /* The actual assembler, running on each agrument the user entered */
 void runAssembler(char *argv[], int index)
 {
-    /* DO IT IN A LOOP FOR ALL ARGV */
     char as_filename[MAX_FILE_NAME_LENGTH];
     char am_filename[MAX_FILE_NAME_LENGTH];
     char ob_filename[MAX_FILE_NAME_LENGTH];
@@ -51,22 +38,16 @@ void runAssembler(char *argv[], int index)
     /* Create the binary code table */
     struct Binary *binary_code_table = createBinary("Binary_code_table", "Binary_type");
 
-    /* Create the binary code table */
+    /* Create the variables table */
     struct Variable *variable_table = createVariable("Variable_table", -1, "Variable_type");
 
     /* Extract the filename from the command-line argument  */
 
     sprintf(as_filename, "%.*s.as", (int)sizeof(as_filename) - 4, argv[index]);
-
     sprintf(am_filename, "%.*s.am", (int)sizeof(am_filename) - 4, argv[index]);
-
     sprintf(ob_filename, "%.*s.ob", (int)sizeof(ob_filename) - 4, argv[index]);
-
     sprintf(ent_filename, "%.*s.ent", (int)sizeof(ent_filename) - 4, argv[index]);
-
     sprintf(ext_filename, "%.*s.ext", (int)sizeof(ext_filename) - 4, argv[index]);
-
-    printf("as name: %s\tam name: %s\tob name: %s\tent name: %s\text name: %s\n", as_filename, am_filename, ob_filename, ent_filename, ext_filename);
 
     /* Spread macros over .am file */
     preAssemble(as_filename, am_filename);
@@ -76,7 +57,7 @@ void runAssembler(char *argv[], int index)
     if (passed_first)
     {
         /* All lines has correct syntax,
-        Need to start building the binary codes for each line. */
+        Now start building the binary codes for each line. */
 
         /* Check that extern and symbol(entry) are not the same because entry cannot be extern and vice versa */
         if (tablesAreDifferent(symbol_table, extern_table))
@@ -108,13 +89,13 @@ void runAssembler(char *argv[], int index)
 
                     fclose(ext_file);
                 }
+
                 /* Create object file */
                 ob_file = fopen(ob_filename, "w");
                 if (ob_file == NULL)
                 {
                     fprintf(stderr, "Error opening the assembly file.\n");
                 }
-
                 writeEncodedProgramToFile(ob_file, binary_code_table, &ic, &dc);
                 fclose(ob_file);
 

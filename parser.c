@@ -217,9 +217,13 @@ void removeNewLineFromEnd(char *line)
 else is error */
 bool isEmptyOrCommentLines(char *line)
 {
+    char line_copy[MAX_LINE_LENGTH];
+
+    strcpy(line_copy, line);
+    cleanAllSpaces(line_copy);
 
     /* Skip empty lines or lines starting with ';' */
-    if (line[0] == '\0' || line[0] == ';' || line[0] == '\n')
+    if (line_copy[0] == '\0' || line_copy[0] == ';' || line_copy[0] == '\n')
     {
         return true;
     }
@@ -409,7 +413,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
             Check if we are inside a macro decleration, save it.
             If not, check if its a known macro to replace it. */
 
-            if (is_inside_macro)
+            if (is_inside_macro && !isEmptyOrCommentLines(line_copy))
             {
 
                 /* Reset line_copy to current line */
