@@ -38,7 +38,7 @@ bool validInstruction(char words[][MAX_LINE_LENGTH], int num_words, char *line, 
 
 void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, struct Binary *binary_code_table_head,
                                 struct Symbol *symbol_table_head, struct Variable *variable_table_head, struct Extern *extern_table_head,
-                                int *line_number, int *passed_second, int *current_memory, int *ic);
+                                int *line_number, int *passed_second, int *current_memory, int *ic, int *is_ext);
 
 /* add all strings to result to complete a binary word */
 void combine4Strings(char *result, const char *are, const char *dest_addressing, const char *instruction_code, const char *source_addressing);

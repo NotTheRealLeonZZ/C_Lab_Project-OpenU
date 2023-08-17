@@ -15,7 +15,7 @@ I also re-count memory,ic and dc. Encode each line to 12 bit binary and build bi
 Build variable table of entry and extern to output later to files.
 
  */
-void secondPass(const char *input_file, struct Symbol *symbol_table, struct Extern *extern_table, struct Binary *binary_code_table, struct Variable *variable_table, int *passed_second, int *ic, int *dc)
+void secondPass(const char *input_file, struct Symbol *symbol_table, struct Extern *extern_table, struct Binary *binary_code_table, struct Variable *variable_table, int *passed_second, int *ic, int *dc, int *is_ext)
 {
 
     /* Openes the input file for reading and checks for errors when opening the file */
@@ -28,6 +28,6 @@ void secondPass(const char *input_file, struct Symbol *symbol_table, struct Exte
     }
 
     /* Parse 2nd pass */
-    parseSecondPass(assembly_file, symbol_table, extern_table, binary_code_table, variable_table, passed_second, ic, dc);
+    parseSecondPass(assembly_file, symbol_table, extern_table, binary_code_table, variable_table, passed_second, ic, dc, is_ext);
     fclose(assembly_file);
 }

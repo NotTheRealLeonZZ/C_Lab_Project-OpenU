@@ -11,6 +11,19 @@
 #include "variables.h"
 #include "encoding.h"
 
+/*
+Main Assmebler file.
+Here I receive arguments from the user in terminal with the name of the .as files (without the .as extention)
+For each file:
+1) Pre-assemble and spread macros
+2) First pass - Create symbol table, calculate memory + IC + DC, create extern table, check for syntax error and max file memory size.
+3) Second pass - Validate all operands, validate .exntry and .extern, re-calculate memory + IC + DC, encode each line to binary
+and build binary table, create variables table to output to files later.
+4) If both passes pass, I check if need to create .ent and .ext files and create them from variable table
+5) Create .ob file that encode the binary table to base64, instruction first and then directives.
+ */
+
+/* The actual assembler, running on each agrument the user entered */
 void runAssembler(char *argv[], int index)
 {
     /* DO IT IN A LOOP FOR ALL ARGV */
@@ -59,16 +72,16 @@ void runAssembler(char *argv[], int index)
     preAssemble(as_filename, am_filename);
 
     /* First pass - Create tables */
-    firstPass(am_filename, symbol_table, extern_table, &passed_first, &is_ent, &is_ext);
+    firstPass(am_filename, symbol_table, extern_table, &passed_first, &is_ent);
     if (passed_first)
     {
         /* All lines has correct syntax,
         Need to start building the binary codes for each line. */
 
-        /* Check that extern and symbol(entry) are not the same */
+        /* Check that extern and symbol(entry) are not the same because entry cannot be extern and vice versa */
         if (tablesAreDifferent(symbol_table, extern_table))
         {
-            secondPass(am_filename, symbol_table, extern_table, binary_code_table, variable_table, &passed_second, &ic, &dc);
+            secondPass(am_filename, symbol_table, extern_table, binary_code_table, variable_table, &passed_second, &ic, &dc, &is_ext);
             if (passed_second)
             {
 

@@ -50,8 +50,8 @@ void removeSubString(char *line, char *sub_string);
 /* Function to parse the assembly file */
 bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_name, struct Macro *macro_table_head);
 
-void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_first, int *is_ent, int *is_ext);
+void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_first, int *is_ent);
 
-void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, struct Binary *binary_code_head, struct Variable *variable_table_head, int *passed_second, int *ic, int *dc);
+void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, struct Binary *binary_code_head, struct Variable *variable_table_head, int *passed_second, int *ic, int *dc, int *is_ext);
 
 #endif /* PARSER_H */
