@@ -10,6 +10,8 @@
     Pre assembler function.
     The main mission here is to replace all the macros in the original input file (.as)
     and make the file ready for the "First Assembler Pass" by outputing a new file (.am) with all the macros spread.
+    Comment lines must start with ; as first char (no spaces before)
+    Macros cannot have comments in them (MAYBE CHANGE)
     @param input_file the .as file name
     @param output_file the .am file name 
 

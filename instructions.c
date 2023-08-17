@@ -338,7 +338,7 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
             else if (findExtern(extern_table_head, operand_destination))
             {
                 /* Add to variable table as extern */
-                new_variable = createVariable(operand_destination, *current_memory, "ext");
+                new_variable = createVariable(operand_destination, MEMORY_START + *ic, "ext");
                 addVariable(variable_table_head, new_variable);
 
                 current_dest_addressing_encode = ADDRESSING3;
@@ -412,7 +412,7 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 /* Dest operand is an extern symbol */
 
                 /* Add to variable table as extern */
-                new_variable = createVariable(operand_destination, *current_memory, "ext");
+                new_variable = createVariable(operand_destination, MEMORY_START + *ic, "ext");
                 addVariable(variable_table_head, new_variable);
 
                 current_dest_addressing_encode = ADDRESSING3;
@@ -506,9 +506,9 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
             else if (findExtern(extern_table_head, operand_destination))
             {
                 /* Dest operand is an extern symbol */
-
+                printf("Memory of extern: %d\n", *current_memory);
                 /* Add to variable table as extern */
-                new_variable = createVariable(operand_destination, *current_memory, "ext");
+                new_variable = createVariable(operand_destination, MEMORY_START + *ic, "ext");
                 addVariable(variable_table_head, new_variable);
 
                 current_dest_addressing_encode = ADDRESSING3;
@@ -539,7 +539,7 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
             /* Source operand is extern symbol */
 
             /* Add to variable table as extern */
-            new_variable = createVariable(operand_source, *current_memory, "ext");
+            new_variable = createVariable(operand_source, MEMORY_START + *ic, "ext");
             addVariable(variable_table_head, new_variable);
 
             current_are_encode = ABSOLUTE_ARE;
@@ -606,7 +606,7 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
                 /* Dest operand is extern */
 
                 /* Add to variable table as extern */
-                new_variable = createVariable(operand_destination, *current_memory, "ext");
+                new_variable = createVariable(operand_destination, MEMORY_START + *ic, "ext");
                 addVariable(variable_table_head, new_variable);
 
                 current_dest_addressing_encode = ADDRESSING3;
@@ -697,7 +697,7 @@ void calculateInstructionBinary(char words[][MAX_LINE_LENGTH], int num_words, st
             /* Operand is a known extern symbol */
 
             /* Add to variable table as extern */
-            new_variable = createVariable(operand_destination, *current_memory, "ext");
+            new_variable = createVariable(operand_destination, MEMORY_START + *ic, "ext");
             addVariable(variable_table_head, new_variable);
 
             current_are_encode = ABSOLUTE_ARE;
