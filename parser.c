@@ -491,7 +491,7 @@ bool parseFileHandleMacros(FILE *assembly_file, FILE *am_file, char *am_file_nam
     return true;
 }
 
-void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_first, int *is_ent, int *is_ext)
+void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head, int *passed_first, int *is_ent)
 {
     char line[MAX_LINE_LENGTH];                       /* Variable to hold the current line */
     char line_copy[MAX_LINE_LENGTH];                  /* A copy of the line, to manipulate without losing the original line */
@@ -601,7 +601,6 @@ void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Exte
                                     strcpy(current_extern_name, words[1]);
                                     new_extern = createExtern(current_extern_name);
                                     addExtern(extern_table_head_copy, new_extern);
-                                    *is_ext = 1;
                                 }
                                 else if (strcmp(words[0], ".entry") == 0)
                                 {
@@ -699,7 +698,6 @@ void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Exte
                             strcpy(current_extern_name, words[1]);
                             new_extern = createExtern(current_extern_name);
                             addExtern(extern_table_head_copy, new_extern);
-                            *is_ext = 1;
                         }
                         else if (strcmp(words[0], ".entry") == 0)
                         {
@@ -784,7 +782,7 @@ void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Exte
 }
 
 void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head,
-                     struct Binary *binary_code_table_head, struct Variable *variable_table_head, int *passed_second, int *ic, int *dc)
+                     struct Binary *binary_code_table_head, struct Variable *variable_table_head, int *passed_second, int *ic, int *dc, int *is_ext)
 {
     char line[MAX_LINE_LENGTH];                   /* Variable to hold the current line */
     char line_copy[MAX_LINE_LENGTH];              /* A copy of the line, to manipulate without losing the original line */
@@ -901,7 +899,7 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
             {
                 *ic += 1;
                 calculateInstructionBinary(words, num_words, binary_code_table_head_copy, symbol_table_head_copy, variable_table_head_copy,
-                                           extern_table_head_copy, &line_number, passed_second, &memory_count, ic);
+                                           extern_table_head_copy, &line_number, passed_second, &memory_count, ic, is_ext);
                 memory_count += 1;
             }
         }
@@ -949,7 +947,7 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
             {
                 *ic += 1;
                 calculateInstructionBinary(words, num_words, binary_code_table_head_copy, symbol_table_head_copy, variable_table_head_copy,
-                                           extern_table_head_copy, &line_number, passed_second, &memory_count, ic);
+                                           extern_table_head_copy, &line_number, passed_second, &memory_count, ic, is_ext);
                 memory_count += 1;
             }
         }

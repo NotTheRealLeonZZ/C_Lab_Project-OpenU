@@ -14,7 +14,7 @@ Each symbol is validated for syntax error.
 In the end, I check that the max memory isn't passed.
  */
 
-void firstPass(const char *input_file, struct Symbol *symbol_table, struct Extern *extern_table, int *passed_first, int *is_ent, int *is_ext)
+void firstPass(const char *input_file, struct Symbol *symbol_table, struct Extern *extern_table, int *passed_first, int *is_ent)
 {
 
     /* Openes the input file for reading and checks for errors when opening the file */
@@ -26,7 +26,7 @@ void firstPass(const char *input_file, struct Symbol *symbol_table, struct Exter
         return;
     }
 
-    parseFirstPass(assembly_file, symbol_table, extern_table, passed_first, is_ent, is_ext);
+    parseFirstPass(assembly_file, symbol_table, extern_table, passed_first, is_ent);
 
     fclose(assembly_file);
 }
