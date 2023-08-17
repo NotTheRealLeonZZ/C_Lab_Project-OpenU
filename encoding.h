@@ -1,8 +1,9 @@
 #ifndef ENCODING_H
 #define ENCODING_H
-#include <stdint.h>
 #include "binary.h"
 #include "symbol.h"
+
+typedef unsigned short uint16_t;
 
 char *convertToBase64(uint16_t binaryData);
 
