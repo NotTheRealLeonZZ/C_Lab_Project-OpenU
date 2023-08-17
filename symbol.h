@@ -30,6 +30,8 @@ void removeSymbolFromLine(char *line, char *symbol_name);
 
 void warnSymbolIfNecessary(char *word, int line_number);
 
+void fixSymbolAddress(struct Symbol *symbol_table_head_copy, int ic);
+
 /* Print the symbol table */
 void printSymbolTable(struct Symbol *head);
 

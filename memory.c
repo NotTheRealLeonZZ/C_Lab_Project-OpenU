@@ -15,7 +15,7 @@ int promoteMemoryDirective(int memory_count, char *line, int num_words, char *na
     {
         removeTrailingSpaces(line);
         len = strlen(line);
-        printf("string: %s", line);
+        printf("string: %s\n", line);
         memory_count += len - 2; /* removing 2 quotes  */
     }
 

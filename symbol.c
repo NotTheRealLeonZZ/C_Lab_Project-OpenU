@@ -158,6 +158,21 @@ void warnSymbolIfNecessary(char *word, int line_number)
     }
 }
 
+/* Fix address of symbols with complete IC */
+void fixSymbolAddress(struct Symbol *symbol_table_head_copy, int ic)
+{
+    struct Symbol *temp = symbol_table_head_copy;
+    while (temp != NULL)
+    {
+        if (strcmp(temp->type, "dir") == 0)
+        {
+            temp->address += ic;
+        }
+
+        temp = temp->next;
+    }
+}
+
 /* Print the symbol table */
 void printSymbolTable(struct Symbol *head)
 {

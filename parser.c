@@ -23,6 +23,7 @@ Ready for assembler "First pass"
 #include "extern.h"
 #include "binary.h"
 #include "variables.h"
+#include "registers.h"
 
 void cleanLeadingSpaces(char *input)
 {
@@ -507,9 +508,12 @@ void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Exte
     char words[MAX_LINE_LENGTH][MAX_LINE_LENGTH];     /* 2 dim array to hold all the parsed words from a line*/
     int num_words = 0;                                /* Counter for words captured from line */
     int i;
+    int ic = 0;
+    int dc = 0;
 
     while (fgets(line, MAX_LINE_LENGTH, am_file) != NULL)
     {
+        printf("Current line memory: %d\n", memory_count);
         /* Reset pointer to copy */
         symbol_table_head_copy = symbol_table_head;
 
@@ -570,13 +574,24 @@ void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Exte
                             Validation is enough, later we'll deal with it */
                                 if (strcmp(words[0], ".extern") != 0 && strcmp(words[0], ".entry") != 0)
                                 {
-                                    /* Valid syntax of directive,
-                                type: dir
-                                address: memory_count */
-                                    current_symbol_address = memory_count;
+                                    /* Valid syntax of directive, */
+
+                                    current_symbol_address = MEMORY_START + dc;
                                     strcpy(current_symbol_type, "dir");
                                     new_symbol = createSymbol(current_symbol_name, current_symbol_address, current_symbol_type);
                                     addSymbol(symbol_table_head_copy, new_symbol);
+
+                                    /* Count DC */
+                                    if (strcmp(words[0], ".string") == 0)
+                                    {
+                                        removeTrailingSpaces(line_copy);
+                                        dc += strlen(line_copy) - 2 + 1; /* removing 2 quotes and added '\0'  */
+                                    }
+
+                                    if (strcmp(words[0], ".data") == 0)
+                                    {
+                                        dc += num_words - 1;
+                                    }
 
                                     memory_count = promoteMemoryDirective(memory_count, line_copy, num_words, words[0]);
                                     memory_count += 1;
@@ -589,7 +604,9 @@ void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Exte
                                     *is_ext = 1;
                                 }
                                 else if (strcmp(words[0], ".entry") == 0)
+                                {
                                     *is_ent = 1;
+                                }
                             }
                             else
                             {
@@ -602,11 +619,24 @@ void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Exte
                             /* Validate instruction syntax for first pass */
                             if (validInstruction(words, num_words, line_copy, line_number))
                             {
-                                current_symbol_address = memory_count;
-                                strcpy(current_symbol_type, "ins");
 
+                                current_symbol_address = MEMORY_START + ic;
+                                strcpy(current_symbol_type, "ins");
                                 new_symbol = createSymbol(current_symbol_name, current_symbol_address, current_symbol_type);
                                 addSymbol(symbol_table_head_copy, new_symbol);
+
+                                /* Count IC */
+                                if (num_words == 3)
+                                {
+                                    if (isRegisterName(words[1]) && isRegisterName(words[2]))
+                                        ic += num_words - 1;
+                                    else
+                                        ic += num_words;
+                                }
+                                else
+                                {
+                                    ic += num_words;
+                                }
 
                                 memory_count = promoteMemoryInstruction(memory_count, num_words, words);
                                 memory_count += 1;
@@ -647,6 +677,20 @@ void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Exte
                     {
                         if (strcmp(words[0], ".extern") != 0 && strcmp(words[0], ".entry") != 0)
                         {
+                            /* Valid syntax of directive, */
+
+                            /* Count DC */
+                            if (strcmp(words[0], ".string") == 0)
+                            {
+                                removeTrailingSpaces(line_copy);
+                                dc += strlen(line_copy) - 2 + 1; /* removing 2 quotes and added '\0'  */
+                            }
+
+                            if (strcmp(words[0], ".data") == 0)
+                            {
+                                dc += num_words - 1;
+                            }
+
                             memory_count = promoteMemoryDirective(memory_count, line_copy, num_words, words[0]);
                             memory_count += 1;
                         }
@@ -658,7 +702,9 @@ void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Exte
                             *is_ext = 1;
                         }
                         else if (strcmp(words[0], ".entry") == 0)
+                        {
                             *is_ent = 1;
+                        }
                     }
                     else
                     {
@@ -670,6 +716,19 @@ void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Exte
                     /* Validate instruction syntax for first pass */
                     if (validInstruction(words, num_words, line_copy, line_number))
                     {
+                        /* Count IC */
+                        if (num_words == 3)
+                        {
+                            if (isRegisterName(words[1]) && isRegisterName(words[2]))
+                                ic += num_words - 1;
+                            else
+                                ic += num_words;
+                        }
+                        else
+                        {
+                            ic += num_words;
+                        }
+
                         memory_count = promoteMemoryInstruction(memory_count, num_words, words);
                         memory_count += 1;
                     }
@@ -708,12 +767,20 @@ void parseFirstPass(FILE *am_file, struct Symbol *symbol_table_head, struct Exte
 
         line_number += 1;
     }
-    memory_count -= 1; /* Fix last line count */
+    memory_count -= 1; /* fix last line */
+
+    /* memory_count -= 1;  Fix last line count */
     if (memory_count > MAX_PROGRAM_SIZE)
     {
         *passed_first = 0;
     }
+
+    /* fix address of symbols with complete IC */
+    symbol_table_head_copy = symbol_table_head;
+    fixSymbolAddress(symbol_table_head_copy, ic);
+
     printf("Total memory allocated first pass: %d\n", memory_count);
+    printf("First pass IC: %d, DC: %d\n", ic, dc);
 }
 
 void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Extern *extern_table_head,
@@ -796,7 +863,7 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
                     *dc += strlen(words[1]) + 1; /* including '\0' */
                 }
                 /* calculation for .data and .string */
-                calculateDirectiveBinary(words, num_words, binary_code_table_head_copy, symbol_table_head_copy, variable_table_head_copy);
+                calculateDirectiveBinary(words, num_words, binary_code_table_head_copy);
 
                 if (strcmp(words[0], ".entry") == 0)
                 {
@@ -843,7 +910,6 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
             /* Not a symbol */
             resetLineCopy(line, line_copy);
             /* add here from isDirective */
-
             if (isDirectiveName(words[0]))
             {
                 /* Calculate dc increasing */
@@ -856,7 +922,7 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
                     *dc += strlen(words[1]);
                 }
                 /* calculation for .data and .string */
-                calculateDirectiveBinary(words, num_words, binary_code_table_head_copy, symbol_table_head_copy, variable_table_head_copy);
+                calculateDirectiveBinary(words, num_words, binary_code_table_head_copy);
 
                 if (strcmp(words[0], ".entry") == 0)
                 {
@@ -882,9 +948,9 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
             else if (isInstructionName(words[0]))
             {
                 *ic += 1;
-                memory_count += 1;
                 calculateInstructionBinary(words, num_words, binary_code_table_head_copy, symbol_table_head_copy, variable_table_head_copy,
                                            extern_table_head_copy, &line_number, passed_second, &memory_count, ic);
+                memory_count += 1;
             }
         }
 
@@ -901,6 +967,8 @@ void parseSecondPass(FILE *am_file, struct Symbol *symbol_table_head, struct Ext
 
         line_number += 1;
     }
-    memory_count -= 1; /* Fix last line count */
+
+    memory_count -= 1; /* Fix last line */
     printf("Total memory allocated second pass: %d\n", memory_count);
+    printf("Second pass IC: %d, DC: %d\n", *ic, *dc);
 }

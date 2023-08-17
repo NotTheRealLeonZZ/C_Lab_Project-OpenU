@@ -214,7 +214,7 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
     return false;
 }
 
-void calculateDirectiveBinary(char words[][MAX_LINE_LENGTH], int num_words, struct Binary *binary_code_table_head, struct Symbol *symbol_table_head, struct Variable *variable_table_head)
+void calculateDirectiveBinary(char words[][MAX_LINE_LENGTH], int num_words, struct Binary *binary_code_table_head)
 {
     if (strcmp(words[0], ".data") == 0)
     {

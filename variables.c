@@ -4,6 +4,12 @@
 #include "my_string.h"
 #include "variables.h"
 
+/*
+ Variables table to hold entry and extern variables to output to files
+ Entry: all the .entry symbols, the address is the memory location of entry declaration
+ Extern: All the .extern symbols, the address is the memory location of usef of extern
+*/
+
 struct Variable *createVariable(const char *variable_name, const int variable_address, const char *variable_type)
 {
     struct Variable *new_variable = (struct Variable *)malloc(sizeof(struct Variable));
@@ -41,6 +47,7 @@ void addVariable(struct Variable *current_variable, struct Variable *new_variabl
     current_variable->next = new_variable;
 }
 
+/* Write evey entry variable to .ent file */
 void writeEntVariablesToFile(FILE *ent_file, struct Variable *head)
 {
     struct Variable *temp = head;
@@ -55,6 +62,7 @@ void writeEntVariablesToFile(FILE *ent_file, struct Variable *head)
     }
 }
 
+/* Write evey extern variable to .ext file */
 void writeExtVariablesToFile(FILE *ext_file, struct Variable *head)
 {
     struct Variable *temp = head;
