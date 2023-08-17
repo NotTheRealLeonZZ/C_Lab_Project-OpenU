@@ -3,8 +3,7 @@
 #include <string.h>
 #include "my_string.h"
 
-/* Here I re-created string.h commands I needed */
-
+/* Duplicate a given string using memory allocation. */
 char *my_strdup(const char *str)
 {
     size_t len = strlen(str) + 1; /* +1 for the null-terminator */
@@ -16,4 +15,3 @@ char *my_strdup(const char *str)
     strcpy(new_str, str);
     return new_str;
 }
-

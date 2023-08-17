@@ -8,13 +8,10 @@ mcro m1
  mov @r3, W
 endmcro
 mcro m2
-;m2 macro first line comment
-    ;   m2 macro second line comment
+stop
 endmcro
 mcro m3
-;m3 macro first line comment
-    ;   m3 macro second line comment
-    ;   m3 macro third line comment
+stop
 endmcro
 STR: .string "abcd"
 LIST: .data 6, -9

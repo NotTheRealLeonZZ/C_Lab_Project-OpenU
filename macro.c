@@ -1,11 +1,3 @@
-/*
-
-This file is all about macros and macro tables.
-It contains all the function I will need for the pre-assembler part.
-Also everything that handles memory for these purposes.
-
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,6 +5,7 @@ Also everything that handles memory for these purposes.
 #include "my_string.h"
 #include "globals.h"
 
+/* Initialize a new macro. */
 struct Macro *createMacro(const char *macro_name, const char *macro_data)
 {
 
@@ -30,12 +23,12 @@ struct Macro *createMacro(const char *macro_name, const char *macro_data)
     return new_macro;
 }
 
-/* Add a macro at the end of the node list */
+/* Add a macro to the linked list. */
 void addMacro(struct Macro *current_macro, struct Macro *new_macro)
 {
     /* Assumming head is already exists */
 
-    /* Checking if current macro is NULL */
+    /* Checking if current macro is NULL (memory error) */
     if (current_macro == NULL)
     {
         fprintf(stdout, "The given current node cannot be NULL.\n");
@@ -51,19 +44,7 @@ void addMacro(struct Macro *current_macro, struct Macro *new_macro)
     current_macro->next = new_macro;
 }
 
-/* Probably delete this */
-void copyMacro(struct Macro *src, struct Macro *dst)
-{
-    dst->name = src->name;
-    dst->data = src->data;
-    dst->next = src->next;
-}
-
-/* Function to find a macro by name.
-@param head - the first pointer to the macro table
-@param words - edit
-@param numWords - edit
-@return pointer for the found macro or NULL */
+/* Find a macro by its name. */
 struct Macro *findMacro(struct Macro *head, char words[][MAX_LINE_LENGTH], int numWords)
 {
     struct Macro *head_copy;
@@ -101,19 +82,7 @@ struct Macro *findMacro(struct Macro *head, char words[][MAX_LINE_LENGTH], int n
     return NULL;
 }
 
-void printMacroTable(struct Macro *head)
-{
-    struct Macro *temp = head;
-    printf("Macro Table:\n");
-    while (temp != NULL)
-    {
-        printf("\"%s\": \"%s\" -> ", temp->name, temp->data);
-        temp = temp->next;
-        printf("\n");
-    }
-    printf("=================\n");
-}
-
+/* Write the data of a macro to a file until the macro name changes (macro finished). */
 void writeMacroToOutput(struct Macro *head, FILE *outputFile)
 {
     char name[MAX_MACRO_NAME];
@@ -129,7 +98,7 @@ void writeMacroToOutput(struct Macro *head, FILE *outputFile)
     }
 }
 
-/* Free the memory allocated by the macro table */
+/* Free the memory used by the macro table. */
 void freeMacroTable(struct Macro **head)
 {
     struct Macro *current = *head;

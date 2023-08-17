@@ -32,22 +32,7 @@ bool isDirectiveName(char *received_name)
     return false;
 }
 
-/* Get hte name of directive without the dot
-maybe delete if no need */
-char *getName(char *full_directive_name)
-{
-    if (full_directive_name == NULL || *full_directive_name == '\0')
-        return NULL;
-
-    if (isDirectiveName(full_directive_name))
-    {
-
-        return full_directive_name + 1;
-    }
-
-    return NULL;
-}
-
+/* Check for the presence of a comma problem in a data directive. */
 bool dataCommaProblem(char *line, int line_number, int num_words, char *directive_full_name)
 {
     char line_copy[MAX_LINE_LENGTH];
@@ -87,6 +72,7 @@ bool dataCommaProblem(char *line, int line_number, int num_words, char *directiv
     return true;
 }
 
+/* Check for the presence of a comma problem in a string directive. */
 bool stringCommaProblem(char *line, int line_number, char *directive_full_name)
 {
     char line_copy[MAX_LINE_LENGTH];
@@ -106,6 +92,8 @@ bool stringCommaProblem(char *line, int line_number, char *directive_full_name)
     return true;
 }
 
+/* Check for the presence of a quote problem in a string directive.
+There should be only 2 quotes, at the start and at the end of the string.*/
 bool stringQuoteasProblem(char *line, int line_number, char *directive_full_name)
 {
     int count_quotes = 0;
@@ -113,20 +101,19 @@ bool stringQuoteasProblem(char *line, int line_number, char *directive_full_name
     cleanLeadingSpaces(line);
 
     /* Check if quote is 1st and last char
-    Check if there are exactly 2 Apostro 
+    Check if there are exactly 2 quotes 
     Check all characters are ascii*/
 
     if (quoteAtFirstAndLast(line))
     {
         count_quotes = countQuotes(line);
 
-        if (count_quotes == 2)
+        if (count_quotes == 2) /* Assuming there are not quotes in string, accourding to Forum */
         {
 
             return false;
         }
     }
-    /* fprintf(stdout, "Error! in line %d, Incorrect number of quotes.\n", line_number); */
 
     return true;
 }
@@ -164,6 +151,8 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
     else if (strcmp(directive_full_name, ".string") == 0)
     {
 
+        /* Check syntax for string */
+
         /* Commas are allowed, only between "" */
         if (!stringCommaProblem(line, line_number, directive_full_name))
         {
@@ -181,7 +170,7 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
         }
     }
 
-    /* Entry and Extern have only 1 parameter */
+    /* Entry and Extern have only 1 parameter accourding to Forum */
     else if (strcmp(directive_full_name, ".entry") == 0 || strcmp(directive_full_name, ".extern") == 0)
     {
         if (!commaInLine(line))
@@ -214,6 +203,7 @@ bool validDirective(char words[][MAX_LINE_LENGTH], int num_words, char *line, in
     return false;
 }
 
+/* Calculate the binary representation of a directive. */
 void calculateDirectiveBinary(char words[][MAX_LINE_LENGTH], int num_words, struct Binary *binary_code_table_head)
 {
     if (strcmp(words[0], ".data") == 0)
@@ -229,6 +219,10 @@ void calculateDirectiveBinary(char words[][MAX_LINE_LENGTH], int num_words, stru
     /* If its .extern I already handled it. */
 }
 
+/*
+Calculate the binary representation of a data directive.
+Adds a node at the end of the binary linked list.
+*/
 void calculateDataBinary(char words[][MAX_LINE_LENGTH], int num_words, struct Binary *binary_code_table_head)
 {
     char *binary_encode;
@@ -248,6 +242,10 @@ void calculateDataBinary(char words[][MAX_LINE_LENGTH], int num_words, struct Bi
     free(binary_encode);
 }
 
+/*
+Calculate the binary representation of a string directive.
+Adds a node at the end of the binary linked list.
+*/
 void calculateStringBinary(char words[][MAX_LINE_LENGTH], struct Binary *binary_code_table_head)
 {
     const char *string = words[1];

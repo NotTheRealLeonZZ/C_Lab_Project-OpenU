@@ -5,6 +5,7 @@
 #include "extern.h"
 #include "globals.h"
 
+/* Check if the symbol table and extern table have distinct symbols. */
 bool tablesAreDifferent(struct Symbol *symbol_table, struct Extern *extern_table)
 {
     struct Symbol *symbol_table_copy = symbol_table;

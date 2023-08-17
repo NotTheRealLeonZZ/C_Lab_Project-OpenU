@@ -98,11 +98,6 @@ void runAssembler(char *argv[], int index)
                 }
                 writeEncodedProgramToFile(ob_file, binary_code_table, &ic, &dc);
                 fclose(ob_file);
-
-                printSymbolTable(symbol_table);
-                printExternTable(extern_table);
-                printBinaryTable(binary_code_table);
-                printVariableTable(variable_table);
             }
             else
             {
